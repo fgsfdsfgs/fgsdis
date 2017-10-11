@@ -1,0 +1,23 @@
+name: disapp
+version: 0.1.0
+
+authors:
+  - fgsfds <pvt.fgsfds@gmail.com>
+
+targets:
+  disapp:
+    main: src/disapp.cr
+
+crystal: 0.23.1
+
+license: MIT
+
+dependencies:
+  sqlite3:
+    github: crystal-lang/crystal-sqlite3
+
+  granite_orm:
+    github: amberframework/granite-orm
+
+  kemal:
+    github: kemalcr/kemal
