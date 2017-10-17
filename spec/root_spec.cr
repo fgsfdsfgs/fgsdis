@@ -1,6 +1,6 @@
 require "./spec_helper"
 
-describe HelloWorld do
+describe RootPage do
   # TODO: Write tests
 
   it "works" do

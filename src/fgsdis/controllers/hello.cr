@@ -3,7 +3,7 @@ require "random"
 require "kemal"
 require "../utils"
 
-module HelloWorld
+module HelloPage
   GREETINGS = [
     "Hi there.",
     "Hello World!",
