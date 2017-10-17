@@ -1,2 +1,2 @@
-# disapp
-[![Build Status](https://travis-ci.org/fgsfdsfgs/dis-2017.svg?branch=master)](https://travis-ci.org/fgsfdsfgs/dis-2017)
+# fgsdis
+[![Build Status](https://travis-ci.org/fgsfdsfgs/fgsdis.svg?branch=master)](https://travis-ci.org/fgsfdsfgs/fgsdis)
