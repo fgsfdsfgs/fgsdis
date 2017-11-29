@@ -14,7 +14,17 @@ module SGateway
   end
 
   get "/post/:id" do |env|
-    pass_request(env, :posts)
+    pid = env.params.url["id"]
+
+    res, post = svc_get_entity(:posts, "/post/#{pid}")
+    transform_response_and_halt(env, res) unless post
+
+    res_u, user = svc_get_entity(:users, "/user/#{post["user"]}")
+    transform_response_and_halt(env, res) unless user
+
+    post["username"] = user["name"]
+    new_body = post.to_json
+    return_modified_body(env, res, new_body)
   end
 
   get "/post/:id/comments" do |env|
@@ -73,7 +83,7 @@ module SGateway
   get "/user/:id/post/:pid/comments" do |env|
     uid = env.params.url["id"]
     pid = env.params.url["pid"]
-    res = svc(:posts, "POST", "/comments/by_user/#{uid}/by_post/#{pid}")
+    res = svc(:comments, "GET", "/comments/by_user/#{uid}/by_post/#{pid}")
     transform_response(env, res)
   end
 
@@ -91,7 +101,21 @@ module SGateway
   # /comment
 
   get "/comment/:id" do |env|
-    pass_request(env, :comments)
+    cid = env.params.url["id"]
+
+    res, com = svc_get_entity(:comments, "/comment/#{cid}")
+    transform_response_and_halt(env, res) unless com
+
+    res_u, user = svc_get_entity(:users, "/user/#{com["user"]}")
+    transform_response_and_halt(env, res) unless user
+
+    res_p, post = svc_get_entity(:posts, "/post/#{com["post"]}")
+    transform_response_and_halt(env, res) unless post
+
+    com["username"] = user["name"]
+    com["posttitle"] = post["title"]
+    new_body = com.to_json
+    return_modified_body(env, res, new_body)
   end
 
   delete "/comment/:id" do |env|

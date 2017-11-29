@@ -7,7 +7,8 @@ require "./model"
 
 module SComments
   get "/comments" do |env|
-    paginated_entity_list(env, Comment)
+    env.response.content_type = "application/json"
+    Comment.all.to_json
   end
 
   get "/comments/by_user/:uid" do |env|

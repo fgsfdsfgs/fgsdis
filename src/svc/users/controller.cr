@@ -7,7 +7,8 @@ require "./model"
 
 module SUsers
   get "/users" do |env|
-    paginated_entity_list(env, User)
+    env.response.content_type = "application/json"
+    User.all.to_json
   end
 
   post "/user" do |env|

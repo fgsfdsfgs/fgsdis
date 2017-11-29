@@ -1,2 +1,4 @@
-CONFIG_PORT = 8083
-CONFIG_DB   = "./db/posts.db"
+module SPosts
+  CONFIG_PORT = 8083
+  CONFIG_DB   = "./db/posts.db"
+end
