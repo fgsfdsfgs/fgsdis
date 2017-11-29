@@ -5,8 +5,14 @@ authors:
   - fgsfds <pvt.fgsfds@gmail.com>
 
 targets:
-  fgsdis:
-    main: src/fgsdis.cr
+  svc_gateway:
+    main: src/svc_gateway.cr
+  svc_users:
+    main: src/svc_users.cr
+  svc_posts:
+    main: src/svc_posts.cr
+  svc_comments:
+    main: src/svc_comments.cr
 
 crystal: 0.23.1
 
@@ -21,3 +27,6 @@ dependencies:
 
   kemal:
     github: kemalcr/kemal
+
+  spec-kemal:
+    github: kemalcr/spec-kemal

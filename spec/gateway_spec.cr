@@ -1,6 +1,7 @@
 require "./spec_helper"
+require "../src/fgsdis/gateway/**"
 
-describe FGSDis do
+describe FGSGateway do
   it "returns 404 if route doesn't exist" do
     request = HTTP::Request.new("GET", "/__nothing")
     resp = test_request(request)
