@@ -7,10 +7,6 @@ require "./client"
 require "kemal"
 
 module SGateway
-  get "/" do |env|
-    env.redirect "/test.html"
-  end
-
   # /post
 
   get "/posts" do |env|
@@ -100,5 +96,11 @@ module SGateway
 
   delete "/comment/:id" do |env|
     pass_request(env, :comments)
+  end
+
+  # misc
+
+  get "/" do |env|
+    render_view "root"
   end
 end

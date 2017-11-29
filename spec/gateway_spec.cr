@@ -1,16 +1,14 @@
 require "./spec_helper"
-require "../src/fgsdis/gateway/**"
+require "../src/svc_gateway"
 
-describe FGSGateway do
+describe SGateway do
   it "returns 404 if route doesn't exist" do
-    request = HTTP::Request.new("GET", "/__nothing")
-    resp = test_request(request)
-    resp.status_code.should eq 404
+    get "/__nothing"
+    response.status_code.should eq 404
   end
 
   it "returns 200 or 304 if route exists" do
-    request = HTTP::Request.new("GET", "/")
-    resp = test_request(request)
-    (resp.status_code == 200 || resp.status_code == 304).should be_true
+    get "/"
+    (response.status_code == 200 || response.status_code == 304).should be_true
   end
 end
