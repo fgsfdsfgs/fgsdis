@@ -10,11 +10,8 @@ SGateway::Client.services = {
 
 mock = FakeService.new(25666)
 
-if ENV["CI"]?
-  # apparently travis lags like ass
-  puts("CI detected; sleeping 5 seconds to give server time to bind")
-  sleep(seconds: 5)
-end
+# apparently on some systems the server needs a fuckton of time to bind
+sleep(seconds: 3)
 
 describe SGateway do
   it "returns 404 if route doesn't exist" do
