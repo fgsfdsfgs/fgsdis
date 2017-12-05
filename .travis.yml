@@ -1,6 +1,4 @@
 language: crystal
 
 script:
-  - crystal --version
-  - crystal deps --version
   - ./runspecs.sh

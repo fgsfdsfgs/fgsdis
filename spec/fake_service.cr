@@ -5,7 +5,7 @@ class FakeService
   def initialize(@port : Int32)
     @chan = Channel(Tuple(Int32, String, String)).new(3)
     spawn do
-      echo = HTTP::Server.new(@port) do |ctx|
+      echo = HTTP::Server.new("0.0.0.0", @port) do |ctx|
         sc, body, mime = @chan.not_nil!.receive
         ctx.response.content_type = mime
         ctx.response.status_code = sc

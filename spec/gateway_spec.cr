@@ -3,12 +3,12 @@ require "./fake_service"
 require "../src/svc_gateway"
 
 SGateway::Client.services = {
-  :users    => "http://localhost:8082",
-  :posts    => "http://localhost:8082",
-  :comments => "http://localhost:8082",
+  :users    => "http://localhost:25666",
+  :posts    => "http://localhost:25666",
+  :comments => "http://localhost:25666",
 }
 
-mock = FakeService.new(8082)
+mock = FakeService.new(25666)
 
 describe SGateway do
   it "returns 404 if route doesn't exist" do
