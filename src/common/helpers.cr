@@ -10,7 +10,10 @@ end
 
 macro panic(env, c, m)
   %str = "#{ {{c}} }: " + {{m}}.to_s
-  halt({{env}}, status_code: {{c}}, response: %str)
+  {{env}}.response.status_code = {{c}}
+  {{env}}.response.print(%str)
+  {{env}}.response.close
+  return
 end
 
 macro paginated_entity_list(env, model, filter = "")

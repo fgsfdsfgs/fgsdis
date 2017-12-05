@@ -16,9 +16,10 @@ module SPosts
 
     validate :user, "is required", ->(this : Post) do
       if user = this.user
-        return user > 0
+        user > 0
+      else
+        false
       end
-      false
     end
 
     validate :text, "is required", ->(this : Post) do

@@ -7,124 +7,120 @@ require "./client"
 require "kemal"
 
 module SGateway
-  # /post
+  module Controller
+    # /post
 
-  get "/posts" do |env|
-    pass_request(env, :posts)
-  end
-
-  get "/post/:id" do |env|
-    pid = env.params.url["id"]
-
-    res, post = svc_get_entity(:posts, "/post/#{pid}")
-    transform_response_and_halt(env, res) unless post
-
-    res_u, user = svc_get_entity(:users, "/user/#{post["user"]}")
-    transform_response_and_halt(env, res) unless user
-
-    post["username"] = user["name"]
-    new_body = post.to_json
-    return_modified_body(env, res, new_body)
-  end
-
-  get "/post/:id/comments" do |env|
-    pid = env.params.url["id"]
-    request = "/comments/by_post/#{pid}"
-    copy_pagination_params(env, request)
-    res = svc(:comments, "GET", request)
-    transform_response(env, res)
-  end
-
-  post "/post" do |env|
-    pass_request(env, :posts)
-  end
-
-  post "/post/:id/comment" do |env|
-    if !env.params.json.has_key?("post")
-      env.params.json["post"] = env.params.url["id"]
+    def self.get_all_posts(env)
+      pass_request(env, :posts)
     end
-    body = env.params.json.to_json
-    res = svc(:comments, "POST", "/comment", body)
-    transform_response(env, res)
-  end
 
-  put "/post/:id" do |env|
-    pass_request(env, :posts)
-  end
+    def self.get_post(env)
+      pid = env.params.url["id"]
 
-  delete "/post/:id" do |env|
-    pid = env.params.url["id"]
-    res_comments = svc(:comments, "DELETE", "/comments/by_post/#{pid}")
-    pass_request(env, :posts)
-  end
+      res, post = Client.get_entity(:posts, "/post/#{pid}")
+      transform_response_and_halt(env, res) unless post
 
-  # /user
+      res_u, user = Client.get_entity(:users, "/user/#{post["user"]}")
+      transform_response_and_halt(env, res) unless user
 
-  get "/user/:id" do |env|
-    pass_request(env, :users)
-  end
+      post["username"] = user["name"]
+      new_body = post.to_json
+      return_modified_body(env, res, new_body)
+    end
 
-  get "/user/:id/posts" do |env|
-    uid = env.params.url["id"]
-    request = "/posts/by_user/#{uid}"
-    copy_pagination_params(env, request)
-    res = svc(:posts, "GET", request)
-    transform_response(env, res)
-  end
+    def self.get_comments_on_post(env)
+      pid = env.params.url["id"]
+      request = "/comments/by_post/#{pid}"
+      copy_pagination_params(env, request)
+      res = Client.request(:comments, "GET", request)
+      transform_response(env, res)
+    end
 
-  get "/user/:id/comments" do |env|
-    uid = env.params.url["id"]
-    request = "/comments/by_user/#{uid}"
-    copy_pagination_params(env, request)
-    res = svc(:comments, "GET", request)
-    transform_response(env, res)
-  end
+    def self.create_post(env)
+      pass_request(env, :posts)
+    end
 
-  get "/user/:id/post/:pid/comments" do |env|
-    uid = env.params.url["id"]
-    pid = env.params.url["pid"]
-    res = svc(:comments, "GET", "/comments/by_user/#{uid}/by_post/#{pid}")
-    transform_response(env, res)
-  end
+    def self.create_comment_on_post(env)
+      if !env.params.json.has_key?("post")
+        env.params.json["post"] = env.params.url["id"]
+      end
+      body = env.params.json.to_json
+      res = Client.request(:comments, "POST", "/comment", body)
+      transform_response(env, res)
+    end
 
-  put "/user/:id" do |env|
-    pass_request(env, :users)
-  end
+    def self.update_post(env)
+      pass_request(env, :posts)
+    end
 
-  delete "/user/:id" do |env|
-    uid = env.params.url["id"]
-    res_comments = svc(:comments, "DELETE", "/comments/by_user/#{uid}")
-    res_posts = svc(:comments, "DELETE", "/posts/by_user/#{uid}")
-    pass_request(env, :users)
-  end
+    def self.delete_post(env)
+      pid = env.params.url["id"]
+      res_comments = Client.request(:comments, "DELETE", "/comments/by_post/#{pid}")
+      pass_request(env, :posts)
+    end
 
-  # /comment
+    # /user
 
-  get "/comment/:id" do |env|
-    cid = env.params.url["id"]
+    def self.get_user(env)
+      pass_request(env, :users)
+    end
 
-    res, com = svc_get_entity(:comments, "/comment/#{cid}")
-    transform_response_and_halt(env, res) unless com
+    def self.get_posts_by_user(env)
+      uid = env.params.url["id"]
+      request = "/posts/by_user/#{uid}"
+      copy_pagination_params(env, request)
+      res = Client.request(:posts, "GET", request)
+      transform_response(env, res)
+    end
 
-    res_u, user = svc_get_entity(:users, "/user/#{com["user"]}")
-    transform_response_and_halt(env, res) unless user
+    def self.get_comments_by_user(env)
+      uid = env.params.url["id"]
+      request = "/comments/by_user/#{uid}"
+      copy_pagination_params(env, request)
+      res = Client.request(:comments, "GET", request)
+      transform_response(env, res)
+    end
 
-    res_p, post = svc_get_entity(:posts, "/post/#{com["post"]}")
-    transform_response_and_halt(env, res) unless post
+    def self.get_comments_by_user_on_post(env)
+      uid = env.params.url["id"]
+      pid = env.params.url["pid"]
+      res = Client.request(:comments, "GET", "/comments/by_user/#{uid}/by_post/#{pid}")
+      transform_response(env, res)
+    end
 
-    com["username"] = user["name"]
-    com["posttitle"] = post["title"]
-    new_body = com.to_json
-    return_modified_body(env, res, new_body)
-  end
+    def self.update_user(env)
+      pass_request(env, :users)
+    end
 
-  delete "/comment/:id" do |env|
-    pass_request(env, :comments)
-  end
+    def self.delete_user(env)
+      uid = env.params.url["id"]
+      res_comments = Client.request(:comments, "DELETE", "/comments/by_user/#{uid}")
+      res_posts = Client.request(:comments, "DELETE", "/posts/by_user/#{uid}")
+      pass_request(env, :users)
+    end
 
-  # misc
+    # /comment
 
-  get "/" do |env|
-    render_view "root"
+    def self.get_comment(env)
+      cid = env.params.url["id"]
+
+      res, com = Client.get_entity(:comments, "/comment/#{cid}")
+      transform_response_and_halt(env, res) unless com
+
+      res_u, user = Client.get_entity(:users, "/user/#{com["user"]}")
+      transform_response_and_halt(env, res) unless user
+
+      res_p, post = Client.get_entity(:posts, "/post/#{com["post"]}")
+      transform_response_and_halt(env, res) unless post
+
+      com["username"] = user["name"]
+      com["posttitle"] = post["title"]
+      new_body = com.to_json
+      return_modified_body(env, res, new_body)
+    end
+
+    def self.delete_comment(env)
+      pass_request(env, :comments)
+    end
   end
 end

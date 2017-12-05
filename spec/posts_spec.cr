@@ -119,6 +119,30 @@ describe SPosts do
     response.status_code.should eq 200
   end
 
+  it "doesn't delete by user if user has no posts" do
+    post_json "/post", %({ "user": "3", "title": "title", "text": "text" })
+    post_json "/post", %({ "user": "3", "title": "title2", "text": "text2" })
+    delete "/posts/by_user/666"
+    response.status_code.should eq 404
+
+    get "/posts/by_user/3"
+    response.status_code.should eq 200
+    json = JSON.parse(response.body)
+    json.raw.should be_a(Array(JSON::Type))
+    json.as_a.size.should eq 2
+  end
+
+  it "deletes by user successfully if user has posts" do
+    delete "/posts/by_user/3"
+    response.status_code.should eq 200
+
+    get "/posts/by_user/3"
+    response.status_code.should eq 200
+    json = JSON.parse(response.body)
+    json.raw.should be_a(Array(JSON::Type))
+    json.as_a.size.should eq 0
+  end
+
   it "doesn't filter by user if user id is invalid" do
     get "/posts/by_user/ass"
     response.status_code.should eq 400
