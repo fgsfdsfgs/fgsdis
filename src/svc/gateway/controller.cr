@@ -95,7 +95,7 @@ module SGateway
     def self.delete_user(env)
       uid = env.params.url["id"]
       res_comments = Client.request(:comments, "DELETE", "/comments/by_user/#{uid}")
-      res_posts = Client.request(:comments, "DELETE", "/posts/by_user/#{uid}")
+      res_posts = Client.request(:posts, "DELETE", "/posts/by_user/#{uid}")
       pass_request(env, :users)
     end
 
