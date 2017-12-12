@@ -44,14 +44,19 @@ module SGateway
       if !env.params.json.has_key?("post")
         env.params.json["post"] = env.params.url["id"]
       end
+
       body = env.params.json.to_json
       res = Client.request(:comments, "POST", "/comment", body)
-      if res.status_code == 200
-        req = "/post/#{env.params.json["post"]}"
-        rating = env.params.json["rating"]? ? env.params.json["rating"] : "0"
-        res_p = Client.request(:posts, "PATCH", req, %({ "rating": "#{rating}" }))
-      end
-      transform_response(env, res)
+      transform_response_and_halt(env, res) unless res.status_code == 201
+
+      req = "/post/#{env.params.json["post"]}"
+      rating = env.params.json["rating"]? ? env.params.json["rating"] : "0"
+      res_p = Client.request(:posts, "PATCH", req, %({ "rating": "#{rating}" }))
+      transform_response_and_halt(env, res) if res_p.status_code == 200
+
+      # rollback
+      res_d = Client.request(:comments, "DELETE", "#{res.headers["Location"]}")
+      transform_response(env, res_p)
     end
 
     def self.update_post(env)

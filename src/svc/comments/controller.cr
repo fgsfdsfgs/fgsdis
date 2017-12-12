@@ -42,6 +42,8 @@ module SComments
 
       panic(env, 400, c.errors[0]) unless c.valid?
       panic(env, 500, c.errors[0]) unless c.save
+
+      created(env, "/comment/#{c.id}")
     end
 
     def self.get(env)

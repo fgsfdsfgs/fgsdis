@@ -16,6 +16,12 @@ macro panic(env, c, m)
   return
 end
 
+macro created(env, uri)
+  {{env}}.response.status_code = 201
+  {{env}}.response.headers["Location"] = {{uri}}
+  {{env}}.response.close
+end
+
 macro paginated_entity_list(env, model, filter = "")
   %result = [] of {{model}}
 

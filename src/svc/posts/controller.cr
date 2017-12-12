@@ -27,6 +27,8 @@ module SPosts
 
       panic(env, 400, p.errors[0]) unless p.valid?
       panic(env, 500, p.errors[0]) unless p.save
+
+      created(env, "/post/#{p.id}")
     end
 
     def self.get(env)

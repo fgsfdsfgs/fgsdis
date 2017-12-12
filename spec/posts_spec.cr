@@ -66,7 +66,7 @@ describe SPosts do
 
   it "posts successfully if everything is good" do
     post_json "/post", %({ "user": "1", "title": "title", "text": "text" })
-    response.status_code.should eq 200
+    response.status_code.should eq 201
   end
 
   it "doesn't get if entity id is invalid" do

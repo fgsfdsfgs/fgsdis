@@ -24,7 +24,7 @@ describe SUsers do
 
   it "posts successfully if everything is good" do
     post_json "/user", %({ "name": "Ivan", "email": "ivan@test.com" })
-    response.status_code.should eq 200
+    response.status_code.should eq 201
   end
 
   it "doesn't get if entity id is invalid" do

@@ -21,6 +21,8 @@ module SUsers
 
       panic(env, 400, u.errors[0]) unless u.valid?
       panic(env, 500, u.errors[0]) unless u.save
+
+      created(env, "/user/#{u.id}")
     end
 
     def self.get(env)

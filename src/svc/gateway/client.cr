@@ -23,10 +23,10 @@ module SGateway
         hdr["Content-Type"] = mime
         HTTP::Client.exec(method, "#{sv}#{uri}", body: body, headers: hdr)
       else
-        HTTP::Client::Response.new(500, "No such service: `#{svname}`.")
+        HTTP::Client::Response.new(503, "No such service: `#{svname}`.")
       end
     rescue
-      HTTP::Client::Response.new(500, "Failed to connect to service `#{svname}`.")
+      HTTP::Client::Response.new(503, "Failed to connect to service `#{svname}`.")
     end
 
     def self.parse_entity(res) : Entity | Nil

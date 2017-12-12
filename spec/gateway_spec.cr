@@ -62,17 +62,17 @@ describe SGateway do
   end
 
   it "creates posts" do
-    mock.push_response(200, "$request")
+    mock.push_response(201, "$request")
     post_json "/post", %({ "user": "1", "text": "ptext" })
-    response.status_code.should eq 200
+    response.status_code.should eq 201
     response.body.should eq "POST /post"
   end
 
   it "creates comments, inserts post id from link and alters post rating" do
-    mock.push_response(200, "$body")
+    mock.push_response(201, "$body")
     mock.push_response(200, "$request")
     post_json "/post/1/comment", %({ "user": "1", "text": "ptext" })
-    response.status_code.should eq 200
+    response.status_code.should eq 201
     response.body.should eq %({"user":"1","text":"ptext","post":"1"})
   end
 

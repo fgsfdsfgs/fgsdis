@@ -177,7 +177,7 @@ describe SComments do
 
   it "posts successfully if everything is good" do
     post_json "/comment", %({ "user": "1", "post": "1", "text": "text" })
-    response.status_code.should eq 200
+    response.status_code.should eq 201
   end
 
   it "doesn't get if entity id is invalid" do
