@@ -106,13 +106,10 @@ module SGateway
       transform_response_and_halt(env, res) unless com
 
       res_u, user = Client.get_entity(:users, "/user/#{com["user"]}")
-      transform_response_and_halt(env, res) unless user
-
       res_p, post = Client.get_entity(:posts, "/post/#{com["post"]}")
-      transform_response_and_halt(env, res) unless post
 
-      com["username"] = user["name"]
-      com["posttitle"] = post["title"]
+      com["username"] = user["name"] if user
+      com["posttitle"] = post["title"] if post
       new_body = com.to_json
       return_modified_body(env, res, new_body)
     end
