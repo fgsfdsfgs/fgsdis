@@ -13,7 +13,7 @@ module SUsers
     end
 
     def self.create(env)
-      attrs = env.params.json.select(User::SETTABLE_FIELDS)
+      attrs = env.params.json.select(User::CREATE_FIELDS)
       panic(env, 400, "No relevant fields in JSON.") if attrs.empty?
 
       u = User.new(attrs)
@@ -33,7 +33,7 @@ module SUsers
     def self.update(env)
       u = nil
       get_requested_entity(env, User, u)
-      attrs = env.params.json.select(User::SETTABLE_FIELDS)
+      attrs = env.params.json.select(User::EDIT_FIELDS)
       panic(env, 400, "No relevant fields in JSON.") if attrs.empty?
       u.set_attributes(attrs)
       panic(env, 400, u.errors[0]) unless u.valid?

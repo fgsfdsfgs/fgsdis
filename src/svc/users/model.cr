@@ -22,6 +22,7 @@ module SUsers
       this.name != nil && this.name != ""
     end
 
-    SETTABLE_FIELDS = {"email", "name", "description"}
+    CREATE_FIELDS = {"email", "name", "description"}
+    EDIT_FIELDS   = {"description"}
   end
 end

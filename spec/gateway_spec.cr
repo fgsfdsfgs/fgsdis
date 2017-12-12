@@ -68,8 +68,9 @@ describe SGateway do
     response.body.should eq "POST /post"
   end
 
-  it "creates comments and inserts post id from link" do
+  it "creates comments, inserts post id from link and alters post rating" do
     mock.push_response(200, "$body")
+    mock.push_response(200, "$request")
     post_json "/post/1/comment", %({ "user": "1", "text": "ptext" })
     response.status_code.should eq 200
     response.body.should eq %({"user":"1","text":"ptext","post":"1"})
@@ -117,16 +118,6 @@ describe SGateway do
     put "/user/1", body: %({ "name": "editedname" })
     response.status_code.should eq 200
     response.body.should eq "PUT /user/1"
-  end
-
-  it "deletes users and their posts and comments" do
-    mock.push_response(200, "$request")
-    mock.push_response(200, "$request")
-    mock.push_response(200, "$request")
-    delete "/user/1"
-    response.status_code.should eq 200
-    response.body.should eq "DELETE /user/1"
-    mock.empty?.should be_true
   end
 
   it "gets comments and adds usernames and post titles to them" do

@@ -8,8 +8,9 @@ module SComments
 
     field user : Int64
     field post : Int64
-    field date : String
     field text : String
+    field rating : Int64
+    field date : String
 
     # belongs_to: :user
     # belongs_to: :post
@@ -34,6 +35,11 @@ module SComments
       this.text != nil && this.text != ""
     end
 
-    SETTABLE_FIELDS = {"user", "post", "text"}
+    validate :rating, "is required", ->(this : Comment) do
+      this.rating != nil
+    end
+
+    CREATE_FIELDS = {"user", "post", "text", "rating"}
+    EDIT_FIELDS   = {"text"}
   end
 end

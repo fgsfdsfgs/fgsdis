@@ -16,3 +16,9 @@ def put_json(uri, body)
   headers["Content-Type"] = "application/json"
   put uri, headers, body
 end
+
+def patch_json(uri, body)
+  headers = HTTP::Headers.new
+  headers["Content-Type"] = "application/json"
+  patch uri, headers, body
+end

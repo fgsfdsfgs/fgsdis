@@ -104,6 +104,26 @@ describe SPosts do
     response.status_code.should eq 400
   end
 
+  it "doesn't patch if entity id is invalid" do
+    patch "/post/Ivan"
+    response.status_code.should eq 400
+  end
+
+  it "doesn't patch if entity doesn't exist" do
+    patch "/post/666"
+    response.status_code.should eq 404
+  end
+
+  it "doesn't patch if not enough json data" do
+    patch "/post/1"
+    response.status_code.should eq 400
+  end
+
+  it "doesn't patch if json data is invalid" do
+    patch_json "/post/1", %({ "rating": "" })
+    response.status_code.should eq 400
+  end
+
   it "doesn't delete if entity id is invalid" do
     delete "/post/Ivan"
     response.status_code.should eq 400

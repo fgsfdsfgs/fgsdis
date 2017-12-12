@@ -33,11 +33,12 @@ module SComments
     end
 
     def self.create(env)
-      attrs = env.params.json.select(Comment::SETTABLE_FIELDS)
+      attrs = env.params.json.select(Comment::CREATE_FIELDS)
       panic(env, 400, "No relevant fields in JSON.") if attrs.empty?
 
       c = Comment.new(attrs)
       c.date = Time.now.to_s
+      c.rating = 0i64 unless c.rating
 
       panic(env, 400, c.errors[0]) unless c.valid?
       panic(env, 500, c.errors[0]) unless c.save

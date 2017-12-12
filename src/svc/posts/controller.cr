@@ -18,11 +18,12 @@ module SPosts
     end
 
     def self.create(env)
-      attrs = env.params.json.select(Post::SETTABLE_FIELDS)
+      attrs = env.params.json.select(Post::CREATE_FIELDS)
       panic(env, 400, "No relevant fields in JSON.") if attrs.empty?
 
       p = Post.new(attrs)
       p.date = Time.now.to_s
+      p.rating = 0i64
 
       panic(env, 400, p.errors[0]) unless p.valid?
       panic(env, 500, p.errors[0]) unless p.save
@@ -38,9 +39,23 @@ module SPosts
     def self.update(env)
       p = nil
       get_requested_entity(env, Post, p)
-      attrs = env.params.json.select(Post::SETTABLE_FIELDS)
+      attrs = env.params.json.select(Post::EDIT_FIELDS)
       panic(env, 400, "No relevant fields in JSON.") if attrs.empty?
       p.set_attributes(attrs)
+      panic(env, 400, p.errors[0]) unless p.valid?
+      panic(env, 500, p.errors[0]) unless p.save
+    end
+
+    def self.patch(env)
+      p = nil
+      get_requested_entity(env, Post, p)
+      diff = env.params.json["rating"]?
+      panic(env, 400, "No relevant fields in JSON.") unless diff
+      diff = diff.to_s.to_i64?
+      panic(env, 400, "`rating` must be an Int.") unless diff
+      if rating = p.rating
+        p.rating = rating + diff
+      end
       panic(env, 400, p.errors[0]) unless p.valid?
       panic(env, 500, p.errors[0]) unless p.save
     end

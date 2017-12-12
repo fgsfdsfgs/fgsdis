@@ -24,6 +24,10 @@ module SPosts
       Controller.update(env)
     end
 
+    patch "/post/:id" do |env|
+      Controller.patch(env)
+    end
+
     delete "/post/:id" do |env|
       Controller.delete(env)
     end

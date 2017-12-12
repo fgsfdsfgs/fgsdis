@@ -9,6 +9,7 @@ module SPosts
     field user : Int64
     field title : String
     field text : String
+    field rating : Int64
     field date : String
 
     # belongs_to: :user
@@ -30,6 +31,15 @@ module SPosts
       this.title != nil && this.title != ""
     end
 
-    SETTABLE_FIELDS = {"user", "title", "text"}
+    validate :rating, "is required to be one of 0, -1, 1", ->(this : Post) do
+      if rating = this.rating
+        rating >= -1 && rating <= 1
+      else
+        false
+      end
+    end
+
+    CREATE_FIELDS = {"user", "title", "text"}
+    EDIT_FIELDS   = {"text", "rating"}
   end
 end

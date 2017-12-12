@@ -46,6 +46,11 @@ module SGateway
       end
       body = env.params.json.to_json
       res = Client.request(:comments, "POST", "/comment", body)
+      if res.status_code == 200
+        req = "/post/#{env.params.json["post"]}"
+        rating = env.params.json["rating"]? ? env.params.json["rating"] : "0"
+        res_p = Client.request(:posts, "PATCH", req, %({ "rating": "#{rating}" }))
+      end
       transform_response(env, res)
     end
 
@@ -89,13 +94,6 @@ module SGateway
     end
 
     def self.update_user(env)
-      pass_request(env, :users)
-    end
-
-    def self.delete_user(env)
-      uid = env.params.url["id"]
-      res_comments = Client.request(:comments, "DELETE", "/comments/by_user/#{uid}")
-      res_posts = Client.request(:posts, "DELETE", "/posts/by_user/#{uid}")
       pass_request(env, :users)
     end
 

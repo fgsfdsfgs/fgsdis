@@ -56,10 +56,6 @@ module SGateway
       Controller.update_user(env)
     end
 
-    delete "/user/:id" do |env|
-      Controller.delete_user(env)
-    end
-
     # /comment
 
     get "/comment/:id" do |env|
