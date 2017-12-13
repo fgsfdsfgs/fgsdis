@@ -65,9 +65,13 @@ module SGateway
 
     def self.delete_post(env)
       pid = env.params.url["id"]
-      res = Client.queue_request(:comments, "DELETE", "/comments/by_post/#{pid}")
-      res = Client.queue_request(:posts, "DELETE", "/post/#{pid}")
-      transform_response(env, res)
+      res_c = Client.queue_request(:comments, "DELETE", "/comments/by_post/#{pid}")
+      res_p = Client.queue_request(:posts, "DELETE", "/post/#{pid}")
+      if res_c.status_code == 202
+        transform_response(env, res_c)
+      else
+        transform_response(env, res_p)
+      end
     end
 
     # /user

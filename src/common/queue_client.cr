@@ -51,4 +51,17 @@ module RequestQueue
       q.listen
     end
   end
+
+  def self.attach_to?(address : String, queue : String)
+    spawn do
+      begin
+        q = RequestQueue::Client.new(address, queue)
+      rescue
+        puts("WARNING: Could not connect to Redis at #{address}.")
+        puts("         Queued jobs will be unavailable.")
+      else
+        q.listen
+      end
+    end
+  end
 end

@@ -3,10 +3,12 @@ require "./config"
 
 module SGateway
   module RequestQueue
-    unless ENV["KEMAL_ENV"]? == "test"
+    begin
       @@context = Redis.new(url: CONFIG_REDIS_ADDR)
-    else
+    rescue
       @@context = nil
+      puts("WARNING: Could not connect to Redis at #{CONFIG_REDIS_ADDR}.")
+      puts("         Job queueing will be unavailable.")
     end
 
     def self.push(service, method, uri, body, mime)
