@@ -13,7 +13,7 @@ module SPosts
 
     def self.get_by_user(env)
       uid = env.params.url.fetch("uid", "").to_i64?
-      panic(env, 400, "`uid` must be an Int.") unless uid
+      panic(env, 400, "User ID must be an Int.") unless uid
       paginated_entity_list(env, Post, "user = #{uid}")
     end
 
@@ -70,7 +70,7 @@ module SPosts
 
     def self.delete_by_user(env)
       uid = env.params.url.fetch("uid", "").to_i64?
-      panic(env, 400, "`uid` must be an Int.") unless uid
+      panic(env, 400, "User ID must be an Int.") unless uid
       filtered_delete(env, Post, "user = #{uid}")
     end
   end

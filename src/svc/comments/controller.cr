@@ -14,21 +14,21 @@ module SComments
 
     def self.get_by_user(env)
       uid = env.params.url.fetch("uid", "").to_i64?
-      panic(env, 400, "`uid` must be an Int.") unless uid
+      panic(env, 400, "User ID must be an Int.") unless uid
       paginated_entity_list(env, Comment, "user = #{uid}")
     end
 
     def self.get_by_post(env)
       pid = env.params.url.fetch("pid", "").to_i64?
-      panic(env, 400, "`pid` must be an Int.") unless pid
+      panic(env, 400, "Post ID must be an Int.") unless pid
       paginated_entity_list(env, Comment, "post = #{pid}")
     end
 
     def self.get_by_user_and_post(env)
       uid = env.params.url.fetch("uid", "").to_i64?
-      panic(env, 400, "`uid` must be an Int.") unless uid
+      panic(env, 400, "User ID must be an Int.") unless uid
       pid = env.params.url.fetch("pid", "").to_i64?
-      panic(env, 400, "`pid` must be an Int.") unless pid
+      panic(env, 400, "Post ID must be an Int.") unless pid
       paginated_entity_list(env, Comment, "(user = #{uid}) and (post = #{pid})")
     end
 
@@ -61,13 +61,13 @@ module SComments
 
     def self.delete_by_user(env)
       uid = env.params.url.fetch("uid", "").to_i64?
-      panic(env, 400, "`uid` must be an Int.") unless uid
+      panic(env, 400, "User ID must be an Int.") unless uid
       filtered_delete(env, Comment, "user = #{uid}")
     end
 
     def self.delete_by_post(env)
       pid = env.params.url.fetch("pid", "").to_i64?
-      panic(env, 400, "`pid` must be an Int.") unless pid
+      panic(env, 400, "Post ID must be an Int.") unless pid
       filtered_delete(env, Comment, "post = #{pid}")
     end
   end

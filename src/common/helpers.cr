@@ -3,7 +3,7 @@ require "./utils"
 
 macro get_requested_entity(env, model, target)
   %id = {{env}}.params.url.fetch("id", "").to_i64?
-  panic({{env}}, 400, "`id` must be an Int.") unless %id
+  panic({{env}}, 400, "ID must be an Int.") unless %id
   {{target}} = {{model}}.find(%id)
   panic({{env}}, 404, "{{model}} not found.") unless {{target}}
 end
@@ -11,7 +11,8 @@ end
 macro panic(env, c, m)
   %str = "#{ {{c}} }: " + {{m}}.to_s
   {{env}}.response.status_code = {{c}}
-  {{env}}.response.print(%str)
+  {{env}}.response.content_type = "application/json"
+  {{env}}.response.print(%( { "message": "#{%str}" } ))
   {{env}}.response.close
   return
 end
@@ -43,7 +44,6 @@ macro paginated_entity_list(env, model, filter = "")
   end
 
   %result = {{model}}.all(%clause)
-
   {{env}}.response.content_type = "application/json"
   %result.to_json
 end

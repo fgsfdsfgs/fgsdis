@@ -21,9 +21,8 @@ module SGateway
       transform_response_and_halt(env, res) unless post
 
       res_u, user = Client.get_entity(:users, "/user/#{post["user"]}")
-      transform_response_and_halt(env, res) unless user
 
-      post["username"] = user["name"]
+      post["username"] = user["name"] if user
       new_body = post.to_json
       return_modified_body(env, res, new_body)
     end
