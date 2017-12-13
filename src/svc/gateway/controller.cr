@@ -65,8 +65,9 @@ module SGateway
 
     def self.delete_post(env)
       pid = env.params.url["id"]
-      res_comments = Client.request(:comments, "DELETE", "/comments/by_post/#{pid}")
-      pass_request(env, :posts)
+      res = Client.queue_request(:comments, "DELETE", "/comments/by_post/#{pid}")
+      res = Client.queue_request(:posts, "DELETE", "/post/#{pid}")
+      transform_response(env, res)
     end
 
     # /user

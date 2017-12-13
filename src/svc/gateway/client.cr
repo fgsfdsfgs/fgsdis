@@ -2,6 +2,7 @@ require "json"
 require "http/client"
 require "uri"
 require "./config"
+require "./queue_server"
 
 module SGateway
   module Client
@@ -27,6 +28,19 @@ module SGateway
       end
     rescue
       HTTP::Client::Response.new(503, "Failed to connect to service `#{svname}`.")
+    end
+
+    def self.queue_request(svname, method, uri, body = nil, mime = "application/json")
+      if sv = @@services[svname]
+        hdr = HTTP::Headers.new
+        hdr["Content-Type"] = mime
+        HTTP::Client.exec(method, "#{sv}#{uri}", body: body, headers: hdr)
+      else
+        HTTP::Client::Response.new(503, "No such service: `#{svname}`.")
+      end
+    rescue
+      RequestQueue.push(svname, method, uri, body ? body : "", mime)
+      HTTP::Client::Response.new(202, "Operation pending.")
     end
 
     def self.parse_entity(res) : Entity | Nil
