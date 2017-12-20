@@ -49,7 +49,7 @@ module SGateway
       transform_response_and_halt(env, res) unless res.status_code == 201
 
       req = "/post/#{env.params.json["post"]}"
-      rating = env.params.json["rating"]? ? env.params.json["rating"] : "0"
+      rating = env.params.json.fetch("rating", "0")
       res_p = Client.request(:posts, "PATCH", req, %({ "rating": "#{rating}" }))
       transform_response_and_halt(env, res) if res_p.status_code == 200
 
@@ -124,6 +124,18 @@ module SGateway
     end
 
     def self.delete_comment(env)
+      cid = env.params.url["id"]
+
+      res, com = Client.get_entity(:comments, "/comment/#{cid}")
+      transform_response_and_halt(env, res) unless com
+
+      rating = com["rating"].to_s.to_i64?
+      if rating && rating != 0
+        req = "/post/#{com["post"]}"
+        res_p = Client.request(:posts, "PATCH", req, %({ "rating": "#{-rating}" }))
+        transform_response_and_halt(env, res_p) if res_p.status_code > 304
+      end
+
       pass_request(env, :comments)
     end
   end

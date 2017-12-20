@@ -16,8 +16,10 @@ module SUsers
       attrs = env.params.json.select(User::CREATE_FIELDS)
       panic(env, 400, "No relevant fields in JSON.") if attrs.empty?
 
+      tidy_fields(attrs)
+
       u = User.new(attrs)
-      u.reg_date = Time.now.to_s
+      u.reg_date = Time.now.to_s("%FT%X")
 
       panic(env, 400, u.errors[0]) unless u.valid?
       panic(env, 500, u.errors[0]) unless u.save
@@ -37,6 +39,9 @@ module SUsers
       get_requested_entity(env, User, u)
       attrs = env.params.json.select(User::EDIT_FIELDS)
       panic(env, 400, "No relevant fields in JSON.") if attrs.empty?
+
+      tidy_fields(attrs)
+
       u.set_attributes(attrs)
       panic(env, 400, u.errors[0]) unless u.valid?
       panic(env, 500, u.errors[0]) unless u.save

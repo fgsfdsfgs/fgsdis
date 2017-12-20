@@ -1,4 +1,6 @@
 require "kemal"
+require "time"
+require "html"
 require "./utils"
 
 macro get_requested_entity(env, model, target)
@@ -23,7 +25,7 @@ macro created(env, uri)
   {{env}}.response.close
 end
 
-macro paginated_entity_list(env, model, filter = "")
+macro paginated_entity_list(env, model, filter = "", order = false)
   %result = [] of {{model}}
 
   %start = 0
@@ -39,6 +41,9 @@ macro paginated_entity_list(env, model, filter = "")
   end
 
   %clause = in_range(%start, %psize)
+  if {{order}}
+    %clause = "ORDER BY datetime(date) DESC " + %clause
+  end
   if {{filter}} != ""
     %clause = "WHERE #{ {{filter}} } " + %clause
   end
@@ -66,4 +71,10 @@ macro filtered_delete(env, model, filter)
 
   panic({{env}}, 404, "No {{model}} matched filter.") if %total == 0
   panic({{env}}, 500, %last_error) if %total != %deleted
+end
+
+macro tidy_fields(attrs)
+  {{attrs}}.each do |k, txt|
+    {{attrs}}[k] = HTML.escape(txt.strip).gsub("\n", "<br />") if txt.is_a?(String)
+  end
 end

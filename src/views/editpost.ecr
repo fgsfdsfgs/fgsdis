@@ -1,0 +1,46 @@
+<% content_for "page_title" do %>
+  Edit post
+<% end %>
+
+<% content_for "style" do %>
+  <style>
+    body {
+      padding-top: 54px;
+    }
+
+    @media (min-width: 992px) {
+      body {
+        padding-top: 56px;
+      }
+    }
+  </style>
+<% end %>
+
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+
+      <h1 class="my-4">Edit post: 
+      </h1>
+
+      <div class="card">
+        <div class="card-body">
+          <form id="post-form" method="POST" action="/post/<%= post["id"].to_s %>/edit">
+            <div id="d-title" class="form-group">
+              <input id="title" name="title" data-error="Please fill in the title." class="form-control" placeholder="Title" required value="<%= post["title"].to_s.gsub("<br />", "\n") %>">
+              </input>
+            </div>
+            <div id="d-text" class="form-group">
+              <textarea id="text" name="text" data-error="Please fill in the text." class="form-control" rows="10" placeholder="Text" required><%= post["text"].to_s.gsub("<br />", "\n") %></textarea>
+            </div>
+            <div class="row form-group">
+              <div class="col-auto">
+                <button type="submit" class="btn btn-primary">Submit</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

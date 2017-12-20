@@ -1,0 +1,161 @@
+
+<% content_for "page_title" do %>
+  User <%= user["name"].to_s %>
+<% end %>
+
+<% content_for "style" do %>
+  <style>
+    body {
+      padding-top: 54px;
+    }
+
+    @media (min-width: 992px) {
+      body {
+        padding-top: 56px;
+      }
+    }
+  </style>
+<% end %>
+
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+
+      <h1 class="my-4">User details
+      </h1>
+
+      <div class="card">
+        <h5 class="card-header">User <%= user["name"].to_s %></h5>
+        <div class="card-body">
+          <b>E-mail: </b> <a href="mailto:<%= user["email"].to_s %>"><%= user["email"].to_s %></a>
+          <hr>
+          <b>Bio:</b><br><br>
+          <%- if user["description"]? && user["description"].to_s.strip != "" -%>
+            <p><%= user["description"].to_s.strip %></p>
+          <%- else -%>
+            <p class="text-muted">None given.</p>
+          <%- end -%>
+          <hr>
+          <div class="row">
+            <div class="col-auto">
+              <a href="/user/<%= user["id"].to_s %>/edit" class="btn btn-info" role="button">Edit</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <hr>
+
+      <div>
+        <div class="row">
+        <div class="col">
+        <nav class="nav nav-tabs" id="utabs" role="tablist">
+          <%- if goto == "posts" -%>
+            <a class="nav-item nav-link active" id="nav-posts-tab" data-toggle="tab" href="#tposts" role="tab" aria-controls="tposts" aria-selected="true">Posts</a>
+            <a class="nav-item nav-link" id="nav-comments-tab" data-toggle="tab" href="#tcomments" role="tab" aria-controls="tcomments" aria-selected="false">Comments</a>
+          <%- else -%>
+            <a class="nav-item nav-link" id="nav-posts-tab" data-toggle="tab" href="#tposts" role="tab" aria-controls="tposts" aria-selected="false">Posts</a>
+            <a class="nav-item nav-link active" id="nav-comments-tab" data-toggle="tab" href="#tcomments" role="tab" aria-controls="tcomments" aria-selected="true">Comments</a>
+          <%- end -%>
+        </nav>
+
+        <div class="tab-content" id="utabsContent">
+          <%- if goto == "posts" -%>
+          <div id="tposts" class="tab-pane show active" role="tabpanel" aria-labelledby="tposts-tab">
+          <%- else -%>
+          <div id="tposts" class="tab-pane" role="tabpanel" aria-labelledby="tposts-tab">
+          <%- end -%>
+            <br>
+            <h3><%= user["name"].to_s %>'s posts</h3>
+            <br>
+            <%- if uposts && !uposts.as_a.empty? -%>
+              <%- uposts.each do |post| -%>
+                <div class="card mb-4">
+                  <div class="card-body">
+                    <h2 class="card-title"><%= post["title"].to_s %></h2>
+                    <p class="card-text"><%= word_limit(post["text"].to_s) %></p>
+                    <a href="/post/<%= post["id"].to_s %>" class="btn btn-primary">Read More &rarr;</a>
+                  </div>
+                  <div class="card-footer text-muted">
+                    Posted on <%= timefmt_short(post["date"].to_s) %>, score
+                    <%= post["rating"].to_s %>
+                  </div>
+                </div>
+              <%- end -%>
+
+              <ul class="pagination justify-content-center mb-4">
+                <%- if ppage == 1 -%>
+                  <li class="page-item">
+                    <a class="page-link" href="/user/<%= uid %>?goto=posts&ppage=<%= ppage + 1 %>&cpage=<%= cpage %>">&larr; Older</a>
+                  </li>
+                  <li class="page-item disabled">
+                    <a class="page-link" href="#">Newer &rarr;</a>
+                  </li>
+                <%- else -%>
+                  <li class="page-item disabled">
+                    <a class="page-link" href="#">&larr; Older</a>
+                  </li>
+                  <li class="page-item">
+                    <a class="page-link" href="/user/<%= uid %>?goto=posts&ppage=<%= ppage - 1 %>&cpage=<%= cpage %>">Newer &rarr;</a>
+                  </li>
+                <%- end -%>
+              </ul>
+            <%- else -%>
+              <p class="text-muted">Nothing yet.</p>
+            <%- end -%>
+          </div>
+          <%- if goto == "comments" -%>
+          <div id="tcomments" class="tab-pane show active" role="tabpanel" aria-labelledby="tcomments-tab">
+          <%- else -%>
+          <div id="tcomments" class="tab-pane" role="tabpanel" aria-labelledby="tcomments-tab">
+          <%- end -%>
+            <br>
+            <h3><%= user["name"].to_s %>'s comments</h3>
+            <br>
+            <%- if ucomments && !ucomments.as_a.empty? -%>
+              <%- ucomments.each do |c| -%>
+                <div class="media mb-4">
+                  <div class="media-body">
+                    <a href="/comment/<%= c["id"].to_s %>">
+                    <h5 class="mt-0"><%= timefmt_short(c["date"].to_s) %></h5>
+                    </a>
+                    <%= c["text"].to_s %>
+                    <%- if c["rating"].as_i64 == 1 -%>
+                      <br>
+                      <div class="text-muted">rated up</div>
+                    <%- elsif c["rating"].as_i64 == -1 -%>
+                      <br>
+                      <div class="text-muted">rated down</div>
+                    <%- end -%>
+                  </div>
+                </div>
+              <%- end -%>
+
+              <ul class="pagination justify-content-center mb-4">
+                <%- if cpage == 1 -%>
+                  <li class="page-item">
+                    <a class="page-link" href="/user/<%= uid %>?goto=comments&cpage=<%= cpage + 1 %>&ppage=<%= ppage %>">&larr; Older</a>
+                  </li>
+                  <li class="page-item disabled">
+                    <a class="page-link" href="#">Newer &rarr;</a>
+                  </li>
+                <%- else -%>
+                  <li class="page-item disabled">
+                    <a class="page-link" href="#">&larr; Older</a>
+                  </li>
+                  <li class="page-item">
+                    <a class="page-link" href="/user/<%= uid %>?goto=comments&cpage=<%= cpage - 1 %>&ppage=<%= ppage %>">Newer &rarr;</a>
+                  </li>
+                <%- end -%>
+              </ul>
+            <%- else -%>
+              <p class="text-muted">Nothing yet.</p>
+            <%- end -%>
+          </div>
+        </div>
+      </div>
+      </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,6 +1,7 @@
 require "kemal"
 require "json"
 require "time"
+require "html"
 require "../common/helpers"
 require "./config"
 require "./model"
@@ -36,11 +37,17 @@ module SComments
       attrs = env.params.json.select(Comment::CREATE_FIELDS)
       panic(env, 400, "No relevant fields in JSON.") if attrs.empty?
 
+      tidy_fields(attrs)
+
       c = Comment.new(attrs)
-      c.date = Time.now.to_s
+      c.date = Time.now.to_s("%FT%X")
       c.rating = 0i64 unless c.rating
 
       panic(env, 400, c.errors[0]) unless c.valid?
+      if c.rating != 0
+        comments = Comment.all("WHERE user=#{c.user} AND post=#{c.post} AND rating != 0")
+        panic(env, 400, "You have already rated this post.") if !comments.empty?
+      end
       panic(env, 500, c.errors[0]) unless c.save
 
       created(env, "/comment/#{c.id}")

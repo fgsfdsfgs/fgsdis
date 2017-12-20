@@ -1,0 +1,117 @@
+<% content_for "page_title" do %>
+  <%= post["title"].to_s %>
+<% end %>
+
+<% content_for "style" do %>
+  <style>
+    body {
+      padding-top: 54px;
+    }
+
+    @media (min-width: 992px) {
+      body {
+        padding-top: 56px;
+      }
+    }
+  </style>
+<% end %>
+
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <h1 class="mt-4"><%= post["title"].to_s %></h1>
+      <div class="row lead">
+        <div class="col">
+          <%- if post["username"]? -%>
+            by
+            <a href="/user/<%= post["user"].to_s%>"><%= post["username"].to_s %></a>
+          <%- end -%>
+        </div>
+        <div class="col text-muted text-right">
+          rating: <%= post["rating"].to_s %>
+        </div>
+      </div>
+
+      <hr>
+
+      <p>Posted on <%= timefmt_long(post["date"].to_s) %></p>
+
+      <hr>
+
+      <%= post["text"].to_s %>
+
+      <hr>
+
+      <div class="row">
+        <div class="col-auto">
+          <a href="/post/<%= post["id"].to_s %>/edit" class="btn btn-info" role="button">Edit</a>
+        </div>
+        <div class="col">
+          <form method="POST" action="/post/<%= post["id"].to_s %>/delete">
+            <button type="submit" class="btn btn-danger">Delete</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="card my-4">
+        <h5 class="card-header">Leave a Comment:</h5>
+        <div class="card-body">
+          <form id="comment-form" method="POST" action="/post/<%= post["id"].to_s %>/comment">
+            <div class="form-group">
+              <textarea name="text" data-error="Please enter your comment." class="form-control" rows="3" required></textarea>
+              <div class="help-block with-errors"></div>
+            </div>
+            <div class="row">
+              <div class="col-auto form-group">
+                <button type="submit" class="btn btn-primary">Submit</button>
+              </div>
+              <div class="col form-group">
+                <select name="user" class="custom-select">
+                  <option value="2" selected>User 2</option>
+                  <option value="4">User 4</option>
+                  <option value="5">User 5</option>
+                  <option value="6">User 6</option>
+                  <option value="7">User 7</option>
+                </select>
+              </div>
+              <div class="col text-right">
+                <div class="btn-group form-group" data-toggle="buttons">
+                  <label class="btn btn-danger">
+                    <input type="radio" name="rating" id="rateDn" value="-1"> -1
+                  </label>
+                  <label class="btn btn-secondary active">
+                    <input type="radio" name="rating" id="rateNo" value="0" checked> 0
+                  </label>
+                  <label class="btn btn-success">
+                    <input type="radio" name="rating" id="rateUp" value="1"> +1
+                  </label>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <%- comments.each do |c| -%>
+        <div class="media mb-4">
+          <a href="/user/<%= c["user"].to_s %>">
+          <img class="d-flex mr-3 rounded-circle" src="/images/sanders.png" alt="">
+          </a>
+          <div class="media-body">
+            <a href="/comment/<%= c["id"].to_s %>">
+            <h5 class="mt-0"><%= timefmt_short(c["date"].to_s) %></h5>
+            </a>
+            <%= c["text"].to_s %>
+            <%- if c["rating"].as_i64 == 1 -%>
+              <br>
+              <div class="text-muted">rated up</div>
+            <%- elsif c["rating"].as_i64 == -1 -%>
+              <br>
+              <div class="text-muted">rated down</div>
+            <%- end -%>
+          </div>
+        </div>
+      <%- end -%>
+    </div>
+  </div>
+</div>

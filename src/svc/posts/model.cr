@@ -31,15 +31,11 @@ module SPosts
       this.title != nil && this.title != ""
     end
 
-    validate :rating, "is required to be one of 0, -1, 1", ->(this : Post) do
-      if rating = this.rating
-        rating >= -1 && rating <= 1
-      else
-        false
-      end
+    validate :rating, "is required", ->(this : Post) do
+      this.rating != nil
     end
 
     CREATE_FIELDS = {"user", "title", "text"}
-    EDIT_FIELDS   = {"text", "rating"}
+    EDIT_FIELDS   = {"title", "text", "rating"}
   end
 end

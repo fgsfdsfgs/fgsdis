@@ -35,8 +35,12 @@ module SComments
       this.text != nil && this.text != ""
     end
 
-    validate :rating, "is required", ->(this : Comment) do
-      this.rating != nil
+    validate :rating, "is required to be one of 0, -1, 1", ->(this : Comment) do
+      if rating = this.rating
+        rating >= -1 && rating <= 1
+      else
+        false
+      end
     end
 
     CREATE_FIELDS = {"user", "post", "text", "rating"}

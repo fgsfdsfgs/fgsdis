@@ -1,6 +1,7 @@
 require "kemal"
 require "json"
 require "time"
+require "html"
 require "../common/helpers"
 require "./config"
 require "./model"
@@ -8,21 +9,23 @@ require "./model"
 module SPosts
   module Controller
     def self.get_all(env)
-      paginated_entity_list(env, Post)
+      paginated_entity_list(env, Post, "", true)
     end
 
     def self.get_by_user(env)
       uid = env.params.url.fetch("uid", "").to_i64?
       panic(env, 400, "User ID must be an Int.") unless uid
-      paginated_entity_list(env, Post, "user = #{uid}")
+      paginated_entity_list(env, Post, "user = #{uid}", true)
     end
 
     def self.create(env)
       attrs = env.params.json.select(Post::CREATE_FIELDS)
       panic(env, 400, "No relevant fields in JSON.") if attrs.empty?
 
+      tidy_fields(attrs)
+
       p = Post.new(attrs)
-      p.date = Time.now.to_s
+      p.date = Time.now.to_s("%FT%X")
       p.rating = 0i64
 
       panic(env, 400, p.errors[0]) unless p.valid?
@@ -43,6 +46,7 @@ module SPosts
       get_requested_entity(env, Post, p)
       attrs = env.params.json.select(Post::EDIT_FIELDS)
       panic(env, 400, "No relevant fields in JSON.") if attrs.empty?
+      tidy_fields(attrs)
       p.set_attributes(attrs)
       panic(env, 400, p.errors[0]) unless p.valid?
       panic(env, 500, p.errors[0]) unless p.save
@@ -55,6 +59,7 @@ module SPosts
       panic(env, 400, "No relevant fields in JSON.") unless diff
       diff = diff.to_s.to_i64?
       panic(env, 400, "`rating` must be an Int.") unless diff
+      panic(env, 400, "`rating` must be 0, -1 or 1.") if diff > 1 || diff < -1
       if rating = p.rating
         p.rating = rating + diff
       end

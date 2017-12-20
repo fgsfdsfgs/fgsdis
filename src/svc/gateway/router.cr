@@ -65,11 +65,5 @@ module SGateway
     delete "/comment/:id" do |env|
       Controller.delete_comment(env)
     end
-
-    # /
-
-    get "/" do |env|
-      render_view "root"
-    end
   end
 end

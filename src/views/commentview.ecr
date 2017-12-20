@@ -1,0 +1,62 @@
+<% content_for "page_title" do %>
+  Comment details
+<% end %>
+
+<% content_for "style" do %>
+  <style>
+    body {
+      padding-top: 54px;
+    }
+
+    @media (min-width: 992px) {
+      body {
+        padding-top: 56px;
+      }
+    }
+  </style>
+<% end %>
+
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <%- if ptitle = comment["posttitle"]? -%>
+        <h1 class="mt-4">Comment on "<%= ptitle.to_s %>"</h1>
+      <%- else -%>
+        <h1 class="mt-4">A comment</h1>
+      <%- end -%>
+      <div class="row lead">
+        <div class="col">
+          <%- if uname = comment["username"]? -%>
+            by
+            <a href="#"><%= uname.to_s %></a>
+          <%- end -%>
+        </div>
+        <div class="col text-muted text-right">
+          rated: <%= comment["rating"].to_s %>
+        </div>
+      </div>
+
+      <hr>
+
+      <p>Commented on <%= timefmt_long(comment["date"].to_s) %></p>
+
+      <hr>
+
+      <%= comment["text"].to_s %>
+
+      <hr>
+
+      <div class="row">
+        <div class="col-auto">
+          <a href="/post/<%= comment["post"].to_s %>" class="btn btn-info" role="button">View post</a>
+        </div>
+        <div class="col">
+          <form method="POST" action="/comment/<%= comment["id"].to_s %>/delete">
+            <button type="submit" class="btn btn-danger">Delete</button>
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

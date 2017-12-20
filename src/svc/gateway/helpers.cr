@@ -1,10 +1,14 @@
 require "json"
 require "http/client"
 require "uri"
+require "html"
 require "./client"
 
 macro return_modified_body(env, r, e)
   {{env}}.response.status_code = {{r}}.status_code
+  if %loc = {{r}}.headers["Location"]?
+    {{env}}.response.headers["Location"] = %loc
+  end
   if %ct = {{r}}.content_type
     {{env}}.response.content_type = %ct
   end
@@ -13,6 +17,9 @@ end
 
 macro transform_response(env, r)
   {{env}}.response.status_code = {{r}}.status_code
+  if %loc = {{r}}.headers["Location"]?
+    {{env}}.response.headers["Location"] = %loc
+  end
   if %ct = {{r}}.content_type
     {{env}}.response.content_type = %ct
   end
@@ -21,6 +28,9 @@ end
 
 macro transform_response_and_halt(env, r)
   {{env}}.response.status_code = {{r}}.status_code
+  if %loc = {{r}}.headers["Location"]?
+    {{env}}.response.headers["Location"] = %loc
+  end
   if %ct = {{r}}.content_type
     {{env}}.response.content_type = %ct
   end

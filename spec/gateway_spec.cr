@@ -20,7 +20,8 @@ describe SGateway do
   end
 
   it "returns 200 or 304 if route exists" do
-    get "/"
+    mock.push_response(200, "ass")
+    get "/posts"
     (response.status_code == 200 || response.status_code == 304).should be_true
   end
 
@@ -130,10 +131,11 @@ describe SGateway do
     mock.empty?.should be_true
   end
 
-  it "deletes comments" do
+  it "deletes comments and alters post rating" do
+    mock.push_response(200, %({ "user": "1", "post": "1", "text": "ass" }))
+    mock.push_response(200, "$request")
     mock.push_response(200, "$request")
     delete "/comment/1"
     response.status_code.should eq 200
-    response.body.should eq "DELETE /comment/1"
   end
 end
