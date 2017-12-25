@@ -28,7 +28,7 @@
         <div class="col">
           <%- if uname = comment["username"]? -%>
             by
-            <a href="#"><%= uname.to_s %></a>
+            <a href="/user/<%= comment["user"].to_s%>"><%= uname.to_s %></a>
           <%- end -%>
         </div>
         <div class="col text-muted text-right">

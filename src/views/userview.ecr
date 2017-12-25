@@ -68,7 +68,7 @@
             <br>
             <h3><%= user["name"].to_s %>'s posts</h3>
             <br>
-            <%- if uposts && !uposts.as_a.empty? -%>
+            <%- if uposts && (!uposts.as_a.empty? || ppage != 1) -%>
               <%- uposts.each do |post| -%>
                 <div class="card mb-4">
                   <div class="card-body">
@@ -92,8 +92,8 @@
                     <a class="page-link" href="#">Newer &rarr;</a>
                   </li>
                 <%- else -%>
-                  <li class="page-item disabled">
-                    <a class="page-link" href="#">&larr; Older</a>
+                  <li class="page-item">
+                    <a class="page-link" href="/user/<%= uid %>?goto=posts&ppage=<%= ppage + 1 %>&cpage=<%= cpage %>">&larr; Older</a>
                   </li>
                   <li class="page-item">
                     <a class="page-link" href="/user/<%= uid %>?goto=posts&ppage=<%= ppage - 1 %>&cpage=<%= cpage %>">Newer &rarr;</a>
@@ -112,7 +112,7 @@
             <br>
             <h3><%= user["name"].to_s %>'s comments</h3>
             <br>
-            <%- if ucomments && !ucomments.as_a.empty? -%>
+            <%- if ucomments && (!ucomments.as_a.empty? || cpage != 1) -%>
               <%- ucomments.each do |c| -%>
                 <div class="media mb-4">
                   <div class="media-body">
@@ -140,8 +140,8 @@
                     <a class="page-link" href="#">Newer &rarr;</a>
                   </li>
                 <%- else -%>
-                  <li class="page-item disabled">
-                    <a class="page-link" href="#">&larr; Older</a>
+                  <li class="page-item">
+                    <a class="page-link" href="/user/<%= uid %>?goto=comments&cpage=<%= cpage + 1 %>&ppage=<%= ppage %>">&larr; Older</a>
                   </li>
                   <li class="page-item">
                     <a class="page-link" href="/user/<%= uid %>?goto=comments&cpage=<%= cpage - 1 %>&ppage=<%= ppage %>">Newer &rarr;</a>

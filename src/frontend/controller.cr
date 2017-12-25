@@ -7,7 +7,9 @@ module SFrontend
   get "/" do |env|
     page = env.params.query.fetch("page", "1").to_i64?
     page = 1 if !page
-    r, posts = api_get_json("/posts/?#{env.params.query}")
+    size = env.params.query.fetch("size", "5").to_i64?
+    size = 5 if !size
+    r, posts = api_get_json("/posts/?size=#{size}&page=#{page}")
     env.response.status_code = r.status_code
     render_view("postlist") if posts
   end
@@ -92,9 +94,11 @@ module SFrontend
       cpage = 1 if !cpage
       ppage = env.params.query.fetch("ppage", "1").to_i64?
       ppage = 1 if !ppage
+      size = env.params.query.fetch("size", "10").to_i64?
+      size = 10 if !size
       goto = env.params.query.fetch("goto", "posts").to_s
-      rp, uposts = api_get_json("/user/#{uid}/posts?page=#{ppage}")
-      rc, ucomments = api_get_json("/user/#{uid}/comments?page=#{cpage}")
+      rp, uposts = api_get_json("/user/#{uid}/posts?page=#{ppage}&size=#{size}")
+      rc, ucomments = api_get_json("/user/#{uid}/comments?page=#{cpage}&size=#{size}")
       render_view("userview")
     else
       render_error(env, r)
