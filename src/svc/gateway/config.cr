@@ -1,5 +1,5 @@
 CONFIG_PORT              = 8081
-CONFIG_REDIS_ADDR        = "redis://127.0.0.1:6379"
 CONFIG_SVC_USERS_ADDR    = "http://0.0.0.0:8082"
 CONFIG_SVC_POSTS_ADDR    = "http://0.0.0.0:8083"
 CONFIG_SVC_COMMENTS_ADDR = "http://0.0.0.0:8084"
+CONFIG_SVC_AUTH_ADDR     = "http://0.0.0.0:8085"

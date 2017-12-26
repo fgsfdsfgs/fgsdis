@@ -4,6 +4,7 @@ require "../common/helpers"
 require "../common/utils"
 require "./config"
 require "./client"
+require "./request_queue"
 require "kemal"
 
 module SGateway

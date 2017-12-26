@@ -2,7 +2,6 @@ require "json"
 require "http/client"
 require "uri"
 require "./config"
-require "./queue_server"
 
 module SGateway
   module Client
@@ -12,7 +11,15 @@ module SGateway
       :users    => CONFIG_SVC_USERS_ADDR,
       :posts    => CONFIG_SVC_POSTS_ADDR,
       :comments => CONFIG_SVC_COMMENTS_ADDR,
+      :auth     => CONFIG_SVC_AUTH_ADDR,
     }
+
+    def self.json_result(code, msg)
+      hdr = HTTP::Headers.new
+      hdr["Content-Type"] = "application/json"
+      json = %( { "message": "#{msg}" } )
+      HTTP::Client::Response.new(code, json, hdr)
+    end
 
     def self.services=(s)
       @@services = s
@@ -24,23 +31,10 @@ module SGateway
         hdr["Content-Type"] = mime
         HTTP::Client.exec(method, "#{sv}#{uri}", body: body, headers: hdr)
       else
-        HTTP::Client::Response.new(503, "No such service: `#{svname}`.")
+        json_result(503, "No such service: `#{svname}`.")
       end
     rescue
-      HTTP::Client::Response.new(503, "Failed to connect to service `#{svname}`.")
-    end
-
-    def self.queue_request(svname, method, uri, body = nil, mime = "application/json")
-      if sv = @@services[svname]
-        hdr = HTTP::Headers.new
-        hdr["Content-Type"] = mime
-        HTTP::Client.exec(method, "#{sv}#{uri}", body: body, headers: hdr)
-      else
-        HTTP::Client::Response.new(503, "No such service: `#{svname}`.")
-      end
-    rescue
-      RequestQueue.push(svname, method, uri, body ? body : "", mime)
-      HTTP::Client::Response.new(202, "Operation pending.")
+      json_result(503, "Failed to connect to service `#{svname}`.")
     end
 
     def self.parse_entity(res) : Entity | Nil
