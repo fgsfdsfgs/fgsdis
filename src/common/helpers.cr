@@ -10,13 +10,21 @@ macro get_requested_entity(env, model, target)
   panic({{env}}, 404, "{{model}} not found.") unless {{target}}
 end
 
-macro panic(env, c, m)
+macro print_json_message(env, c, m)
   %str = "#{ {{c}} }: " + {{m}}.to_s
   {{env}}.response.status_code = {{c}}
   {{env}}.response.content_type = "application/json"
-  {{env}}.response.print(%( { "message": "#{%str}" } ))
+  {{env}}.response.print(%( { "message": "#{ {{m}} }" } ))
+end
+
+macro panic(env, c, m, ret = :return)
+  print_json_message({{env}}, {{c}}, {{m}})
   {{env}}.response.close
-  return
+  {% if ret == :return %}
+    return
+  {% elsif ret == :next %}
+    next
+  {% end %}
 end
 
 macro created(env, uri)

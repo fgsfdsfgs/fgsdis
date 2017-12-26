@@ -1,3 +1,5 @@
+require "openssl"
+require "http/server"
 require "kemal"
 
 ROOT_DIR = "."
@@ -12,4 +14,10 @@ end
 
 def with_field(field, value)
   "WHERE #{field} = #{value}"
+end
+
+def sha256(x) : String
+  d = OpenSSL::Digest.new("SHA256")
+  d.update(x)
+  d.hexdigest
 end
