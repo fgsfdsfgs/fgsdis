@@ -1,4 +1,5 @@
 require "json"
+require "base64"
 require "http/client"
 require "uri"
 require "./config"
@@ -31,7 +32,7 @@ module SGateway
     def self.json_result(code, msg)
       hdr = HTTP::Headers.new
       hdr["Content-Type"] = "application/json"
-      json = %( { "message": "#{msg}" } )
+      json = %( { "message": "#{code}: #{msg}" } )
       HTTP::Client::Response.new(code, json, hdr)
     end
 
@@ -42,13 +43,15 @@ module SGateway
     def self.authorize(svname)
       appid = CONFIG_APPID
       secret = @@creds[svname]
+      sv = @@services[svname]
+      authstr = Base64.strict_encode("#{appid}:#{secret}")
       hdr = HTTP::Headers.new
-      hdr["Content-Type"] = "application/json"
-      params = "appid=#{appid}&secret=#{secret}"
+      hdr["Authorization"] = "Basic " + authstr
 
-      res, tok = get_entity(svname, "/auth?#{params}")
-      if res.status_code < 300 && tok
-        @@access[svname] = tok["access_token"]?.to_s
+      res = HTTP::Client.get("#{sv}/auth", headers: hdr)
+      if res.status_code < 300
+        tok = parse_entity(res)
+        @@access[svname] = tok["access_token"]?.to_s if tok
       end
 
       res
@@ -71,8 +74,8 @@ module SGateway
       else
         json_result(503, "No such service: `#{svname}`.")
       end
-    rescue
-      json_result(503, "Failed to connect to service `#{svname}`.")
+    rescue ex
+      json_result(503, "Failed to connect to service `#{svname}`: #{ex.message}.")
     end
 
     def self.parse_entity(res) : Entity | Nil

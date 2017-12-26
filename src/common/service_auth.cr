@@ -1,6 +1,7 @@
 require "http"
 require "html"
 require "time"
+require "base64"
 require "kemal"
 require "./utils"
 require "./helpers"
@@ -36,6 +37,10 @@ module ServiceAuth
     end
   end
 
+  def self.skip?(env)
+    Kemal.config.env == "test"
+  end
+
   def self.valid_creds?(appid, secret)
     myappid = @@appid.not_nil!
     if myappid == appid
@@ -55,7 +60,7 @@ module ServiceAuth
     exclude ["/auth"]
 
     def call(env)
-      return call_next(env) if exclude_match?(env)
+      return call_next(env) if exclude_match?(env) || ServiceAuth.skip?(env)
 
       auth = env.request.headers["Authorization"]?
       if !auth || !auth.starts_with?("Bearer ")
@@ -71,8 +76,17 @@ module ServiceAuth
   end
 
   get "/auth" do |env|
-    appid = env.params.query.fetch("appid", "")
-    secret = env.params.query.fetch("secret", "")
+    auth = env.request.headers["Authorization"]?
+    if !auth || !auth.starts_with?("Basic ")
+      env.response.headers["WWW-Authenticate"] = %(Basic realm="/*")
+      panic(env, 401, "Provide basic auth credentials.", :next)
+    end
+
+    creds = Base64.decode_string(auth.lchop("Basic ")).split(':')
+    panic(env, 400, "Invalid `Authorization` header.", :next) if creds.size != 2
+
+    appid = creds[0]
+    secret = creds[1]
 
     panic(env, 400, "`appid` must be specified.", :next) if appid == ""
     panic(env, 400, "`secret` must be specified.", :next) if secret == ""

@@ -1,7 +1,7 @@
 require "kemal"
 require "json"
 require "time"
-require "../common/helpers"
+require "../../common/helpers"
 require "./config"
 require "./model"
 

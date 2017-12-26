@@ -14,7 +14,7 @@ macro print_json_message(env, c, m)
   %str = "#{ {{c}} }: " + {{m}}.to_s
   {{env}}.response.status_code = {{c}}
   {{env}}.response.content_type = "application/json"
-  {{env}}.response.print(%( { "message": "#{ {{m}} }" } ))
+  {{env}}.response.print(%( { "message": "#{ %str }" } ))
 end
 
 macro panic(env, c, m, ret = :return)
