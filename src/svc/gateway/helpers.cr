@@ -12,6 +12,9 @@ macro return_modified_body(env, r, e)
   if %ct = {{r}}.content_type
     {{env}}.response.content_type = %ct
   end
+  {{r}}.cookies.each do |c|
+    {{env}}.response.cookies << c
+  end
   {{env}}.response.print({{e}})
 end
 
@@ -22,6 +25,9 @@ macro transform_response(env, r)
   end
   if %ct = {{r}}.content_type
     {{env}}.response.content_type = %ct
+  end
+  {{r}}.cookies.each do |c|
+    {{env}}.response.cookies << c
   end
   {{env}}.response.print({{r}}.body)
 end
@@ -34,8 +40,26 @@ macro transform_response_and_halt(env, r)
   if %ct = {{r}}.content_type
     {{env}}.response.content_type = %ct
   end
+  {{r}}.cookies.each do |c|
+    {{env}}.response.cookies << c
+  end
   {{env}}.response.print({{r}}.body)
   return
+end
+
+macro pass_form(env, svc)
+  %body = ""
+  {{env}}.params.body.each do |k, v|
+    %body += "#{k}=#{v}&"
+  end
+  %res = Client.request(
+    {{svc}},
+    {{env}}.request.method,
+    {{env}}.request.resource,
+    %body,
+    "application/x-www-form-urlencoded"
+  )
+  transform_response({{env}}, %res)
 end
 
 macro pass_request(env, svc)

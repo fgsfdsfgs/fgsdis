@@ -12,21 +12,18 @@ module SGateway
       :users    => "",
       :posts    => "",
       :comments => "",
-      :auth     => "",
     }
 
     @@services = {
       :users    => CONFIG_SVC_USERS_ADDR,
       :posts    => CONFIG_SVC_POSTS_ADDR,
       :comments => CONFIG_SVC_COMMENTS_ADDR,
-      :auth     => CONFIG_SVC_AUTH_ADDR,
     }
 
     @@creds = {
       :users    => CONFIG_SVC_USERS_SECRET,
       :posts    => CONFIG_SVC_POSTS_SECRET,
       :comments => CONFIG_SVC_COMMENTS_SECRET,
-      :auth     => CONFIG_SVC_AUTH_SECRET,
     }
 
     def self.json_result(code, msg)
@@ -103,6 +100,13 @@ module SGateway
 
     def self.get_entity(svname, uri) : Tuple(HTTP::Client::Response, Entity | Nil)
       res = request(svname, "GET", uri)
+      {res, parse_entity(res)}
+    end
+
+    def self.get_oauth_token(code) : Tuple(HTTP::Client::Response, Entity | Nil)
+      body = "grant_type=authorization_code&code=#{code}&client_id=#{CONFIG_APPID}"
+      ct = "application/x-www-form-urlencoded"
+      res = request(svname, "POST", "/oauth/token", body, ct)
       {res, parse_entity(res)}
     end
   end

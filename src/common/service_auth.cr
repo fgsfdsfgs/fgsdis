@@ -7,53 +7,31 @@ require "./utils"
 require "./helpers"
 
 module ServiceAuth
-  @@appid = ""
-  @@secret = ""
+  struct BasicToken
+    EXP_TIME = 60 # sec
 
-  module Token
-    TOKEN_EXP_TIME = 60000 # msec
+    property appid : String
+    property issued : Time
+    property expires : Time
+    property hash : String
 
-    @@date = Time.now
-    @@exp_date = Time.now
-    @@hash = ""
+    def initialize(@appid : String)
+      @issued = Time.now
+      @expires = @issued + EXP_TIME.seconds
+      @hash = sha256(@issued.not_nil!.to_s)
+    end
 
-    def self.grant : String
-      @@date = Time.now
-      @@exp_date = @@date + TOKEN_EXP_TIME.milliseconds
-      @@hash = sha256(@@date.not_nil!.to_s)
+    def rotten?
+      Time.now > @expires
+    end
+
+    def to_json
       %( {
-        "access_token": "#{@@hash}",
+        "access_token": "#{@hash}",
         "token_type": "bearer",
-        "expires_in": #{TOKEN_EXP_TIME}
+        "expires_in": #{EXP_TIME}
       } )
     end
-
-    def self.rotten?
-      Time.now > @@exp_date
-    end
-
-    def self.valid?(token)
-      token == @@hash && !self.rotten?
-    end
-  end
-
-  def self.skip?(env)
-    Kemal.config.env == "test"
-  end
-
-  def self.valid_creds?(appid, secret)
-    myappid = @@appid.not_nil!
-    if myappid == appid
-      mysecret = @@secret.not_nil!
-      secret = sha256(secret)
-      return mysecret == secret
-    end
-    false
-  end
-
-  def self.set_creds(appid, secret)
-    @@appid = appid
-    @@secret = sha256(secret)
   end
 
   class ServiceAuthHandler < Kemal::Handler
@@ -69,10 +47,48 @@ module ServiceAuth
       end
 
       token = auth.lchop("Bearer ")
-      panic(env, 401, "Provided token is invalid.") if !Token.valid?(token)
+      panic(env, 401, "Provided token is invalid.") if !ServiceAuth.token_valid?(token)
 
       call_next(env)
     end
+  end
+
+  @@creds = {} of String => String
+  @@tokens = {} of String => BasicToken
+
+  def self.skip?(env)
+    Kemal.config.env == "test"
+  end
+
+  def self.valid_creds?(appid, secret)
+    if mysecret = @@creds[appid]?
+      mysecret == sha256(secret)
+    else
+      false
+    end
+  end
+
+  def self.add_creds(appid, secret)
+    @@creds[appid] = sha256(secret)
+  end
+
+  def self.token_valid?(hash)
+    if mytoken = @@tokens[hash]?
+      if mytoken.rotten?
+        @@tokens.delete(hash)
+        false
+      else
+        true
+      end
+    else
+      false
+    end
+  end
+
+  def self.grant_token(appid)
+    t = BasicToken.new(appid)
+    @@tokens[t.hash] = t
+    t
   end
 
   get "/auth" do |env|
@@ -96,7 +112,7 @@ module ServiceAuth
     end
 
     env.response.content_type = "application/json"
-    Token.grant
+    grant_token(appid).to_json
   end
 
   add_handler(ServiceAuthHandler.new)

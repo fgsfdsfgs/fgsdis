@@ -16,7 +16,7 @@ targets:
   frontend:
     main: src/frontend.cr
 
-crystal: 0.23.1
+crystal: 0.24.1
 
 license: MIT
 
@@ -32,8 +32,3 @@ dependencies:
 
   spec-kemal:
     github: kemalcr/spec-kemal
-
-  redis:
-    github: stefanwille/crystal-redis
-    version: ~> 1.9.0
-

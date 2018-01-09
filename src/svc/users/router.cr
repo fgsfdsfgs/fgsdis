@@ -1,27 +1,36 @@
 require "kemal"
 require "./config"
-require "./controller"
+require "./user_controller"
+require "./oauth_controller"
 
 module SUsers
   module Router
     get "/users" do |env|
-      Controller.get_all(env)
+      UserController.get_all(env)
     end
 
     post "/user" do |env|
-      Controller.create(env)
+      UserController.create(env)
     end
 
     get "/user/:id" do |env|
-      Controller.get(env)
+      UserController.get(env)
     end
 
     put "/user/:id" do |env|
-      Controller.update(env)
+      UserController.update(env)
     end
 
     delete "/user/:id" do |env|
-      Controller.delete(env)
+      UserController.delete(env)
+    end
+
+    get "/oauth/authorize" do |env|
+      OAuthController.request_code(env)
+    end
+
+    post "/oauth/token" do |env|
+      OAuthController.request_token(env)
     end
   end
 end

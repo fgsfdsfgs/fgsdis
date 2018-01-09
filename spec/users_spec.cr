@@ -23,7 +23,7 @@ describe SUsers do
   end
 
   it "posts successfully if everything is good" do
-    post_json "/user", %({ "name": "Ivan", "email": "ivan@test.com" })
+    post_json "/user", %({ "name": "Ivan", "password": "abc", "email": "ivan@test.com" })
     response.status_code.should eq 201
   end
 

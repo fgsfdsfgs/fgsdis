@@ -134,10 +134,30 @@ module SGateway
       if rating && rating != 0
         req = "/post/#{com["post"]}"
         res_p = Client.request(:posts, "PATCH", req, %({ "rating": "#{-rating}" }))
-        transform_response_and_halt(env, res_p) if res_p.status_code > 304
+        transform_response_and_halt(env, res_p) if res_p.status_code > 399
       end
 
       pass_request(env, :comments)
+    end
+
+    # /oauth
+
+    def self.request_code(env)
+      pass_request(env, :users)
+    end
+
+    def self.request_token(env)
+      pass_form(env, :users)
+    end
+
+    def self.oauth_callback(env)
+      code = env.params.query["code"]?
+      panic(env, 400, "`code` is required.") unless code
+
+      body = "grant_type=authorization_code&code=#{code}&client_id=api"
+      ct = "application/x-www-form-urlencoded"
+      res = Client.request(:users, "POST", "/oauth/token", body, ct)
+      transform_response(env, res)
     end
   end
 end

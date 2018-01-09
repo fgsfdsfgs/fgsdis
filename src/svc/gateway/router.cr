@@ -65,5 +65,19 @@ module SGateway
     delete "/comment/:id" do |env|
       Controller.delete_comment(env)
     end
+
+    # /oauth
+
+    get "/oauth/authorize" do |env|
+      Controller.request_code(env)
+    end
+
+    get "/oauth/callback" do |env|
+      Controller.oauth_callback(env)
+    end
+
+    post "/oauth/token" do |env|
+      Controller.request_token(env)
+    end
   end
 end

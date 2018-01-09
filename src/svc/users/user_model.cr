@@ -7,22 +7,29 @@ module SUsers
     table_name users
 
     field email : String
+    field password : String
     field name : String
     field description : String
     field reg_date : String
 
-    # has_many: :posts
-    # has_many: :comments
+    # has_many :posts
+    # has_many :comments
+    has_many :tokens
+    has_many :codes
 
     validate :email, "is required", ->(this : User) do
       this.email != nil && this.email != ""
+    end
+
+    validate :password, "is required", ->(this : User) do
+      this.password != nil && this.password != ""
     end
 
     validate :name, "is required", ->(this : User) do
       this.name != nil && this.name != ""
     end
 
-    CREATE_FIELDS = {"email", "name", "description"}
+    CREATE_FIELDS = {"email", "name", "description", "password"}
     EDIT_FIELDS   = {"description"}
   end
 end

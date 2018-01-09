@@ -11,7 +11,11 @@ module SFrontend
     size = 5 if !size
     r, posts = api_get_json("/posts/?size=#{size}&page=#{page}")
     env.response.status_code = r.status_code
-    render_view("postlist") if posts
+    if posts && r.status_code < 400
+      render_view("postlist")
+    else
+      render_error(env, r)
+    end
   end
 
   post "/post/new" do |env|
