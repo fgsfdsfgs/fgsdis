@@ -32,5 +32,9 @@ module SUsers
     post "/oauth/token" do |env|
       OAuthController.request_token(env)
     end
+
+    post "/oauth/introspect" do |env|
+      OAuthController.introspect(env)
+    end
   end
 end

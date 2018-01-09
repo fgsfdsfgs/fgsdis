@@ -50,11 +50,15 @@
         <div class="col-auto">
           <a href="/post/<%= comment["post"].to_s %>" class="btn btn-info" role="button">View post</a>
         </div>
-        <div class="col">
-          <form method="POST" action="/comment/<%= comment["id"].to_s %>/delete">
-            <button type="submit" class="btn btn-danger">Delete</button>
-          </form>
-        </div>
+        <%- if uid = env.request.cookies["user_id"]? -%>
+          <%- if uid.value == comment["user"].to_s -%>
+            <div class="col">
+              <form method="POST" action="/comment/<%= comment["id"].to_s %>/delete">
+                <button type="submit" class="btn btn-danger">Delete</button>
+              </form>
+            </div>
+          <%- end -%>
+        <%- end -%>
       </div>
 
     </div>

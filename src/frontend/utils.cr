@@ -4,6 +4,7 @@ require "json"
 require "string"
 require "time"
 require "./config"
+require "./auth"
 
 ROOT_DIR = "."
 
@@ -15,24 +16,35 @@ macro render_view(filename, layout)
   render("src/views/#{ {{filename}} }.ecr", "src/views/layouts/#{ {{layout}} }.ecr")
 end
 
-def api_get(uri)
-  HTTP::Client.get("#{CONFIG_GATE}#{uri}")
+def api_request(env, method, uri, body = nil, mime = nil)
+  hdr = get_auth_headers(env)
+  hdr["Content-Type"] = mime if mime
+
+  res = HTTP::Client.exec(method, "#{CONFIG_GATE}#{uri}", body: body, headers: hdr)
+  return res unless res.status_code == 401 || res.status_code == 403
+
+  invalidate_auth_cookies(env)
+  env.redirect("/login?error=unauthorized")
+  env.response.close
+  res
+rescue
+  HTTP::Client::Response.new(500, "Unknown error")
 end
 
-def api_post(uri, body)
-  hdr = HTTP::Headers.new
-  hdr["Content-Type"] = "application/json"
-  HTTP::Client.post("#{CONFIG_GATE}#{uri}", hdr, body)
+def api_get(env, uri)
+  api_request(env, "GET", uri)
 end
 
-def api_put(uri, body)
-  hdr = HTTP::Headers.new
-  hdr["Content-Type"] = "application/json"
-  HTTP::Client.put("#{CONFIG_GATE}#{uri}", hdr, body)
+def api_post(env, uri, body, mime = "application/json")
+  api_request(env, "POST", uri, body, mime)
 end
 
-def api_delete(uri)
-  HTTP::Client.delete("#{CONFIG_GATE}#{uri}")
+def api_put(env, uri, body, mime = "application/json")
+  api_request(env, "PUT", uri, body, mime)
+end
+
+def api_delete(env, uri)
+  api_request(env, "DELETE", uri)
 end
 
 def parse_json?(body)
@@ -44,8 +56,8 @@ def parse_json?(body)
   json
 end
 
-def api_get_json(uri) : Tuple(HTTP::Client::Response, JSON::Any | Nil)
-  res = api_get(uri)
+def api_get_json(env, uri) : Tuple(HTTP::Client::Response, JSON::Any | Nil)
+  res = api_get(env, uri)
   {res, parse_json?(res.body)}
 end
 
@@ -109,7 +121,7 @@ macro parse_json_error(env, r)
   end
 end
 
-def render_error(env, r)
+def render_error(env, r) : String
   errcode = 500
   errtext = "Unknown error"
   parse_json_error(env, r)

@@ -4,6 +4,8 @@ require "../../common/helpers"
 require "../../common/utils"
 require "./config"
 require "./client"
+require "./helpers"
+require "./auth"
 require "./request_queue"
 require "kemal"
 
@@ -37,10 +39,20 @@ module SGateway
     end
 
     def self.create_post(env)
-      pass_request(env, :posts)
+      token, info = OAuth.get_auth_info(env)
+      validate_token_or_halt(env, token, info)
+      validate_login_or_halt(env, info)
+
+      body = env.params.json.to_json
+      res = Client.request(:posts, "POST", "/post", body)
+      transform_response(env, res)
     end
 
     def self.create_comment_on_post(env)
+      token, info = OAuth.get_auth_info(env)
+      validate_token_or_halt(env, token, info)
+      validate_login_or_halt(env, info)
+
       if !env.params.json.has_key?("post")
         env.params.json["post"] = env.params.url["id"]
       end
@@ -60,11 +72,32 @@ module SGateway
     end
 
     def self.update_post(env)
+      token, info = OAuth.get_auth_info(env)
+      validate_token_or_halt(env, token, info)
+      user = OAuth.get_authorized_user(env, info)
+
+      pid = env.params.url["id"]
+      res, post = Client.get_entity(:posts, "/post/#{pid}")
+      transform_response_and_halt(env, res) unless post
+      if user != "0" && user != post["user"].to_s
+        panic(env, 403, "You can only edit your own posts.")
+      end
+
       pass_request(env, :posts)
     end
 
     def self.delete_post(env)
+      token, info = OAuth.get_auth_info(env)
+      validate_token_or_halt(env, token, info)
+      user = OAuth.get_authorized_user(env, info)
+
       pid = env.params.url["id"]
+      res, post = Client.get_entity(:posts, "/post/#{pid}")
+      transform_response_and_halt(env, res) unless post
+      if user != "0" && user != post["user"].to_s
+        panic(env, 403, "You can only delete your own posts.")
+      end
+
       res_c = Client.queue_request(:comments, "DELETE", "/comments/by_post/#{pid}")
       res_p = Client.queue_request(:posts, "DELETE", "/post/#{pid}")
       if res_c.status_code == 202
@@ -104,6 +137,10 @@ module SGateway
     end
 
     def self.update_user(env)
+      token, info = OAuth.get_auth_info(env)
+      validate_token_or_halt(env, token, info)
+      validate_login_or_halt(env, info)
+
       pass_request(env, :users)
     end
 
@@ -125,10 +162,17 @@ module SGateway
     end
 
     def self.delete_comment(env)
+      token, info = OAuth.get_auth_info(env)
+      validate_token_or_halt(env, token, info)
+      user = OAuth.get_authorized_user(env, info)
+
       cid = env.params.url["id"]
 
       res, com = Client.get_entity(:comments, "/comment/#{cid}")
       transform_response_and_halt(env, res) unless com
+      if user != "0" && user != com["user"].to_s
+        panic(env, 403, "You can only delete your own comments.")
+      end
 
       rating = com["rating"].to_s.to_i64?
       if rating && rating != 0
@@ -154,7 +198,7 @@ module SGateway
       code = env.params.query["code"]?
       panic(env, 400, "`code` is required.") unless code
 
-      body = "grant_type=authorization_code&code=#{code}&client_id=api"
+      body = "grant_type=authorization_code&code=#{code}&client_id=api&client_secret=apisecret"
       ct = "application/x-www-form-urlencoded"
       res = Client.request(:users, "POST", "/oauth/token", body, ct)
       transform_response(env, res)

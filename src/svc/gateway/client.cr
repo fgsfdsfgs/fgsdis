@@ -98,8 +98,8 @@ module SGateway
       end
     end
 
-    def self.get_entity(svname, uri) : Tuple(HTTP::Client::Response, Entity | Nil)
-      res = request(svname, "GET", uri)
+    def self.get_entity(svname, uri, method = "GET") : Tuple(HTTP::Client::Response, Entity | Nil)
+      res = request(svname, method, uri)
       {res, parse_entity(res)}
     end
 

@@ -68,12 +68,22 @@ module SUsers
       token.refresh_expires = now + CONFIG_OAUTH_REFRESH_LIFETIME
       return nil unless token.valid?
       return nil unless token.save
-      %({
-        "access_token": "#{token.access}",
-        "refresh_token": "#{token.refresh}",
-        "token_type": "bearer",
-        "expires_in": #{CONFIG_OAUTH_ACCESS_LIFETIME}
-      })
+      if user_id
+        %({
+          "user_id": "#{user_id}",
+          "access_token": "#{token.access}",
+          "refresh_token": "#{token.refresh}",
+          "token_type": "bearer",
+          "expires_in": "#{CONFIG_OAUTH_ACCESS_LIFETIME}"
+        })
+      else
+        %({
+          "access_token": "#{token.access}",
+          "refresh_token": "#{token.refresh}",
+          "token_type": "bearer",
+          "expires_in": "#{CONFIG_OAUTH_ACCESS_LIFETIME}"
+        })
+      end
     end
   end
 end

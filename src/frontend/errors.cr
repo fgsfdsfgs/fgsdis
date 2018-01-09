@@ -1,17 +1,8 @@
 require "kemal"
+require "./utils"
 
-error 400 do
-  ""
-end
-
-error 404 do
-  ""
-end
-
-error 403 do
-  ""
-end
-
-error 500 do
-  ""
+error 404 do |env|
+  errcode = 404
+  errtext = "Nothing here."
+  render_view("error")
 end

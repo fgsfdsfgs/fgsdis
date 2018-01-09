@@ -1,0 +1,54 @@
+
+<% content_for "page_title" do %>
+  Log in
+<% end %>
+
+<% content_for "style" do %>
+  <style>
+    body {
+      padding-top: 54px;
+    }
+
+    @media (min-width: 992px) {
+      body {
+        padding-top: 56px;
+      }
+    }
+  </style>
+<% end %>
+
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <h1 class="my-4">Log in
+      </h1>
+
+      <div class="card">
+        <%- if error == "unauthorized" -%>
+          <h5 class="card-header">You are not authorized to perform this action.<br>Your session has timed out or you haven't logged in before.<br>Please log in now.</h5>
+        <%- elsif error == "timeout" -%>
+          <h5 class="card-header">You were logged out due to inactivity.<br>Please log in again.</h5>
+        <%- else -%>
+          <h5 class="card-header">Enter your credentials.</h5>
+        <%- end -%>
+        <div class="card-body">
+          <form id="user-form" method="POST">
+            <div id="email-div" class="form-group">
+              <input id="username" name="username" data-error="Please fill in the e-mail field." class="form-control" placeholder="E-Mail address" required type="email">
+              </input>
+            </div>
+            <div id="passwd-div" class="form-group">
+              <input id="password" name="password" data-error="Please fill in the password field." class="form-control" placeholder="Password" required type="password">
+              </input>
+            </div>
+            <div class="row">
+              <div class="col-auto">
+                <button type="submit" class="btn btn-primary">Submit</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

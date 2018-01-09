@@ -42,55 +42,53 @@
 
       <hr>
 
-      <div class="row">
-        <div class="col-auto">
-          <a href="/post/<%= post["id"].to_s %>/edit" class="btn btn-info" role="button">Edit</a>
-        </div>
-        <div class="col">
-          <form method="POST" action="/post/<%= post["id"].to_s %>/delete">
-            <button type="submit" class="btn btn-danger">Delete</button>
-          </form>
-        </div>
-      </div>
-
-      <div class="card my-4">
-        <h5 class="card-header">Leave a Comment:</h5>
-        <div class="card-body">
-          <form id="comment-form" method="POST" action="/post/<%= post["id"].to_s %>/comment">
-            <div class="form-group">
-              <textarea name="text" data-error="Please enter your comment." class="form-control" rows="3" required></textarea>
-              <div class="help-block with-errors"></div>
+      <%- if uid = env.request.cookies["user_id"]? -%>
+        <%- if uid.value == post["user"].to_s -%>
+          <div class="row">
+            <div class="col-auto">
+              <a href="/post/<%= post["id"].to_s %>/edit" class="btn btn-info" role="button">Edit</a>
             </div>
-            <div class="row">
-              <div class="col-auto form-group">
-                <button type="submit" class="btn btn-primary">Submit</button>
+            <div class="col">
+              <form method="POST" action="/post/<%= post["id"].to_s %>/delete">
+                <button type="submit" class="btn btn-danger">Delete</button>
+              </form>
+            </div>
+          </div>
+        <%- end -%>
+
+        <div class="card my-4">
+          <h5 class="card-header">Leave a Comment:</h5>
+          <div class="card-body">
+            <form id="comment-form" method="POST" action="/post/<%= post["id"].to_s %>/comment">
+              <div class="form-group">
+                <textarea name="text" data-error="Please enter your comment." class="form-control" rows="3" required></textarea>
+                <div class="help-block with-errors"></div>
               </div>
-              <div class="col form-group">
-                <select name="user" class="custom-select">
-                  <option value="2" selected>User 2</option>
-                  <option value="4">User 4</option>
-                  <option value="5">User 5</option>
-                  <option value="6">User 6</option>
-                  <option value="7">User 7</option>
-                </select>
-              </div>
-              <div class="col text-right">
-                <div class="btn-group form-group" data-toggle="buttons">
-                  <label class="btn btn-danger">
-                    <input type="radio" name="rating" id="rateDn" value="-1"> -1
-                  </label>
-                  <label class="btn btn-secondary active">
-                    <input type="radio" name="rating" id="rateNo" value="0" checked> 0
-                  </label>
-                  <label class="btn btn-success">
-                    <input type="radio" name="rating" id="rateUp" value="1"> +1
-                  </label>
+              <div class="row">
+                <div class="col-auto form-group">
+                  <button type="submit" class="btn btn-primary">Submit</button>
+                </div>
+                <div class="col form-group">
+                  <input name="user" class="form-control" value="<%= uid.value %>" hidden></input>
+                </div>
+                <div class="col text-right">
+                  <div class="btn-group form-group" data-toggle="buttons">
+                    <label class="btn btn-danger">
+                      <input type="radio" name="rating" id="rateDn" value="-1"> -1
+                    </label>
+                    <label class="btn btn-secondary active">
+                      <input type="radio" name="rating" id="rateNo" value="0" checked> 0
+                    </label>
+                    <label class="btn btn-success">
+                      <input type="radio" name="rating" id="rateUp" value="1"> +1
+                    </label>
+                  </div>
                 </div>
               </div>
-            </div>
-          </form>
+            </form>
+          </div>
         </div>
-      </div>
+      <%- end -%>
 
       <%- comments.each do |c| -%>
         <div class="media mb-4">

@@ -3,6 +3,7 @@ require "http/client"
 require "uri"
 require "html"
 require "./client"
+require "./auth"
 
 macro return_modified_body(env, r, e)
   {{env}}.response.status_code = {{r}}.status_code
@@ -50,8 +51,9 @@ end
 macro pass_form(env, svc)
   %body = ""
   {{env}}.params.body.each do |k, v|
-    %body += "#{k}=#{v}&"
+    %body += "#{k}=#{URI.escape(v)}&"
   end
+
   %res = Client.request(
     {{svc}},
     {{env}}.request.method,
@@ -78,5 +80,18 @@ macro copy_pagination_params(env, req)
     if %size = {{env}}.params.query["size"]?
       {{req}} += "&size=#{%size}"
     end
+  end
+end
+
+macro validate_token_or_halt(env, hash, info)
+  panic({{env}}, 401, "Please provide an access token.") if {{hash}} == ""
+  panic({{env}}, 401, "No info on this token.") unless {{info}}
+  panic({{env}}, 403, "This token is invalid or inactive.") unless {{info}}["active"] == "true"
+end
+
+macro validate_login_or_halt(env, info)
+  %user = {{env}}.params.json.fetch("user", "")
+  unless {{info}}["user_id"].to_s == "0" || {{info}}["user_id"].to_s == %user
+    panic({{env}}, 401, "You are not logged in as this user.")
   end
 end
