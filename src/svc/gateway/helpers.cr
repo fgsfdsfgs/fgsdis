@@ -64,6 +64,22 @@ macro pass_form(env, svc)
   transform_response({{env}}, %res)
 end
 
+macro pass_form_body(env, svc, res)
+  %body = ""
+  {{env}}.params.body.each do |k, v|
+    %body += "#{k}=#{URI.escape(v)}&"
+  end
+
+  %res = Client.request(
+    {{svc}},
+    {{env}}.request.method,
+    {{res}},
+    %body,
+    "application/x-www-form-urlencoded"
+  )
+  transform_response({{env}}, %res)
+end
+
 macro pass_request(env, svc)
   %res = Client.request(
     {{svc}},
@@ -91,7 +107,9 @@ end
 
 macro validate_login_or_halt(env, info)
   %user = {{env}}.params.json.fetch("user", "")
-  unless {{info}}["user_id"].to_s == "0" || {{info}}["user_id"].to_s == %user
+  %uid1 = %user.to_s.to_i64?
+  %uid2 = {{info}}["user_id"].to_s.to_i64?
+  unless %uid1 && %uid2 && (%uid1 == %uid2)
     panic({{env}}, 401, "You are not logged in as this user.")
   end
 end

@@ -10,7 +10,7 @@ require "./request_queue"
 require "kemal"
 
 module SGateway
-  module Controller
+  module ApiController
     # /post
 
     def self.get_all_posts(env)
@@ -182,26 +182,6 @@ module SGateway
       end
 
       pass_request(env, :comments)
-    end
-
-    # /oauth
-
-    def self.request_code(env)
-      pass_request(env, :users)
-    end
-
-    def self.request_token(env)
-      pass_form(env, :users)
-    end
-
-    def self.oauth_callback(env)
-      code = env.params.query["code"]?
-      panic(env, 400, "`code` is required.") unless code
-
-      body = "grant_type=authorization_code&code=#{code}&client_id=api&client_secret=apisecret"
-      ct = "application/x-www-form-urlencoded"
-      res = Client.request(:users, "POST", "/oauth/token", body, ct)
-      transform_response(env, res)
     end
   end
 end

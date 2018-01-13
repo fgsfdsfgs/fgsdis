@@ -13,7 +13,6 @@ module SFrontend
     size = env.params.query.fetch("size", "5").to_i64?
     size = 5 if !size
     r, posts = api_get_json(env, "/posts/?size=#{size}&page=#{page}")
-    env.response.status_code = r.status_code
     if posts && r.status_code < 400
       render_view("postlist")
     else

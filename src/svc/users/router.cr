@@ -26,7 +26,11 @@ module SUsers
     end
 
     get "/oauth/authorize" do |env|
-      OAuthController.request_code(env)
+      OAuthController.begin_code_auth(env)
+    end
+
+    post "/oauth/authorize" do |env|
+      OAuthController.finalize_code_auth(env)
     end
 
     post "/oauth/token" do |env|

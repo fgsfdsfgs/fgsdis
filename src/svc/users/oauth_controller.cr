@@ -14,16 +14,24 @@ require "./code_model"
 
 module SUsers
   module OAuthController
-    def self.token_get_by_creds(env, client)
-      email = URI.unescape(env.params.body.fetch("username", ""))
-      passwd = URI.unescape(env.params.body.fetch("password", ""))
-      panic(env, 400, "`username` must be set.") if email == ""
-      panic(env, 400, "`password` must be set.") if passwd == ""
+    def self.check_creds(env, email, passwd)
+      return {"`username` must be set.", nil} if email == ""
+      return {"`password` must be set.", nil} if passwd == ""
 
       passwd = sha256(passwd)
       user = User.find_by(:email, email)
-      panic(env, 400, "Username is invalid.") unless user
-      panic(env, 400, "Password is invalid.") if passwd != user.password
+      return {"Username is invalid.", nil} unless user
+      return {"Password is invalid.", nil} if passwd != user.password
+
+      {"", user}
+    end
+
+    def self.token_get_by_creds(env, client)
+      email = URI.unescape(env.params.body.fetch("username", ""))
+      passwd = URI.unescape(env.params.body.fetch("password", ""))
+
+      err, user = check_creds(env, email, passwd)
+      panic(env, 400, err) unless user
 
       env.response.content_type = "application/json"
       Token.grant(client.id, user.id)
@@ -36,12 +44,26 @@ module SUsers
       code = Code.find_by(:hash, hash)
       panic(env, 400, "Invalid code.") unless code
       panic(env, 400, "Client/code mismatch.") unless code.client_id == client.id
-      panic(env, 400, "Code has expired.") if code.rotten?
       panic(env, 400, "Redirect URI mismatch.") unless code.uri == redir
 
-      panic(env, 500, code.errors[0]) unless code.destroy
+      token = Token.find_by(:user_id, code.user_id)
+
+      if !token
+        code.destroy
+        panic(env, 400, "No token for this code.")
+      end
+
+      if code.rotten?
+        token.destroy
+        code.destroy
+        panic(env, 400, "Code has expired.")
+      end
+
+      code.destroy
+      token.update_lifetimes
+
       env.response.content_type = "application/json"
-      Token.grant(client.id, 0i64)
+      token.to_json
     end
 
     def self.token_refresh(env, client)
@@ -86,11 +108,7 @@ module SUsers
       end
 
       if token
-        now = Time.now.epoch
-        token.used = now
-        token.access_expires = now + CONFIG_OAUTH_ACCESS_LIFETIME
-        token.refresh_expires = now + CONFIG_OAUTH_REFRESH_LIFETIME
-        token.save if token.valid?
+        token.update_lifetimes
         %({
           "active": "true",
           "client_id": "#{token.client_id}",
@@ -114,11 +132,14 @@ module SUsers
       panic(env, 403, "Invalid secret.") unless client.secret == sha256(secret)
 
       redir = env.params.body.fetch("redirect_uri", "")
+      cl_redir = client.redirect.not_nil!
       if redir == ""
-        redir = client.redirect
+        redir = cl_redir
       else
         redir = URI.unescape(redir)
       end
+
+      panic(env, 403, "Redirect URI does not match.") unless redir == cl_redir
 
       grant_type = env.params.body.fetch("grant_type", "")
       case grant_type
@@ -133,17 +154,17 @@ module SUsers
       end
     end
 
-    def self.request_code(env)
+    def self.finalize_code_auth(env)
       response_type = env.params.query.fetch("response_type", "")
       client_id = env.params.query.fetch("client_id", "")
-      secret = env.params.query.fetch("client_secret", "")
+      email = URI.unescape(env.params.body.fetch("username", ""))
+      passwd = URI.unescape(env.params.body.fetch("password", ""))
 
       panic(env, 400, "`response_type` must be `code`.") unless response_type == "code"
       panic(env, 400, "`client_id` must be set.") if client_id == ""
 
       client = Client.find_by(:appid, client_id)
       panic(env, 403, "No such client: #{client_id}.") unless client
-      panic(env, 403, "Invalid secret.") unless client.secret == sha256(secret)
 
       redir = env.params.query.fetch("redirect_uri", "")
       cl_redir = client.redirect.not_nil!
@@ -153,9 +174,40 @@ module SUsers
         redir = URI.unescape(redir)
       end
 
-      code = Code.grant(client.id, redir)
+      panic(env, 403, "Redirect URI does not match.") unless redir == cl_redir
+
+      err, user = check_creds(env, email, passwd)
+      panic(env, 400, err) unless user
+
+      token = Token.grant(client.id, user.id)
+      panic(env, 500, "Something went wrong when generating the token.") unless token
+      code = Code.grant(client.id, user.id, redir)
       panic(env, 500, "Something went wrong when generating the code.") unless code
+
       env.redirect(redir + "?code=#{code}")
+    end
+
+    def self.begin_code_auth(env)
+      response_type = env.params.query.fetch("response_type", "")
+      client_id = env.params.query.fetch("client_id", "")
+
+      client = Client.find_by(:appid, client_id)
+      panic(env, 403, "No such client: #{client_id}.") unless client
+
+      redir = env.params.query.fetch("redirect_uri", "")
+      cl_redir = client.redirect.not_nil!
+      if redir == ""
+        redir = cl_redir
+      else
+        redir = URI.unescape(redir)
+      end
+
+      panic(env, 403, "Redirect URI does not match.") unless redir == cl_redir
+
+      env.redirect(
+        "/oauth/login?response_type=#{response_type}&" \
+        "client_id=#{client_id}&redirect_uri=#{redir}"
+      )
     end
   end
 end

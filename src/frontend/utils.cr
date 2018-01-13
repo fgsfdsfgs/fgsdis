@@ -6,8 +6,6 @@ require "time"
 require "./config"
 require "./auth"
 
-ROOT_DIR = "."
-
 macro render_view(filename)
   render("src/views/#{ {{filename}} }.ecr", "src/views/layouts/default.ecr")
 end

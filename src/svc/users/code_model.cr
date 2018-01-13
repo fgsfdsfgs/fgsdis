@@ -13,6 +13,7 @@ module SUsers
     field expires : Int64
 
     belongs_to :client
+    belongs_to :user
 
     validate :hash, "is required", ->(this : Code) do
       this.hash != nil && this.hash != ""
@@ -30,11 +31,12 @@ module SUsers
       end
     end
 
-    def self.grant(client_id, redir = "")
+    def self.grant(client_id, user_id, redir = "")
       now = Time.now.epoch
       code = Code.new
       code.uri = redir
       code.client_id = client_id
+      code.user_id = user_id
       code.hash = sha256(now.to_s)
       code.issued = now
       code.expires = now + CONFIG_OAUTH_CODE_LIFETIME

@@ -8,7 +8,6 @@ module SUsers
     adapter sqlite
     table_name oauth_tokens
 
-    field user_id : Int64 # HACK: granite doesn't support optional relations
     field access : String
     field refresh : String
     field issued : Int64
@@ -17,6 +16,7 @@ module SUsers
     field refresh_expires : Int64
 
     belongs_to :client
+    belongs_to :user
 
     validate :access, "is required", ->(this : Token) do
       this.access != nil && this.access != ""
@@ -28,15 +28,6 @@ module SUsers
 
     validate :issued, "is required", ->(this : Token) do
       this.issued != nil && this.issued != 0
-    end
-
-    # HACK: granite doesn't support optional relations (2)
-    def user
-      if uid = @user_id
-        User.find(uid)
-      else
-        nil
-      end
     end
 
     def access_rotten?
@@ -55,7 +46,25 @@ module SUsers
       end
     end
 
-    def self.grant(client_id, user_id = nil)
+    def to_json
+      %({
+        "user_id": "#{@user_id}",
+        "access_token": "#{@access}",
+        "refresh_token": "#{@refresh}",
+        "token_type": "bearer",
+        "expires_in": "#{(@access_expires.not_nil! - Time.now.epoch)}"
+      })
+    end
+
+    def update_lifetimes
+      now = Time.now.epoch
+      @used = now
+      @access_expires = now + CONFIG_OAUTH_ACCESS_LIFETIME
+      @refresh_expires = now + CONFIG_OAUTH_REFRESH_LIFETIME
+      save if valid?
+    end
+
+    def self.grant(client_id, user_id)
       now = Time.now.epoch
       token = Token.new
       token.client_id = client_id
@@ -68,22 +77,7 @@ module SUsers
       token.refresh_expires = now + CONFIG_OAUTH_REFRESH_LIFETIME
       return nil unless token.valid?
       return nil unless token.save
-      if user_id
-        %({
-          "user_id": "#{user_id}",
-          "access_token": "#{token.access}",
-          "refresh_token": "#{token.refresh}",
-          "token_type": "bearer",
-          "expires_in": "#{CONFIG_OAUTH_ACCESS_LIFETIME}"
-        })
-      else
-        %({
-          "access_token": "#{token.access}",
-          "refresh_token": "#{token.refresh}",
-          "token_type": "bearer",
-          "expires_in": "#{CONFIG_OAUTH_ACCESS_LIFETIME}"
-        })
-      end
+      token.to_json
     end
   end
 end
