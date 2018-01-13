@@ -77,7 +77,7 @@ module SUsers
       token.refresh_expires = now + CONFIG_OAUTH_REFRESH_LIFETIME
       return nil unless token.valid?
       return nil unless token.save
-      token.to_json
+      token
     end
   end
 end

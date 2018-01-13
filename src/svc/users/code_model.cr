@@ -12,6 +12,7 @@ module SUsers
     field issued : Int64
     field expires : Int64
 
+    belongs_to :token
     belongs_to :client
     belongs_to :user
 
@@ -31,10 +32,11 @@ module SUsers
       end
     end
 
-    def self.grant(client_id, user_id, redir = "")
+    def self.grant(client_id, user_id, token_id, redir = "")
       now = Time.now.epoch
       code = Code.new
       code.uri = redir
+      code.token_id = token_id
       code.client_id = client_id
       code.user_id = user_id
       code.hash = sha256(now.to_s)
@@ -42,7 +44,7 @@ module SUsers
       code.expires = now + CONFIG_OAUTH_CODE_LIFETIME
       return nil unless code.valid?
       return nil unless code.save
-      code.hash
+      code
     end
   end
 end

@@ -34,7 +34,7 @@ module SUsers
       panic(env, 400, err) unless user
 
       env.response.content_type = "application/json"
-      Token.grant(client.id, user.id)
+      Token.grant(client.id, user.id).to_json
     end
 
     def self.token_get_by_code(env, client, redir)
@@ -46,7 +46,7 @@ module SUsers
       panic(env, 400, "Client/code mismatch.") unless code.client_id == client.id
       panic(env, 400, "Redirect URI mismatch.") unless code.uri == redir
 
-      token = Token.find_by(:user_id, code.user_id)
+      token = Token.find(code.token_id)
 
       if !token
         code.destroy
@@ -79,9 +79,10 @@ module SUsers
       end
 
       new_token = Token.grant(client.id, token.user_id)
-      panic(env, 500, token.errors[0]) unless token.destroy
+      token.destroy
+      panic(env, 500, "Could not grant token.") unless new_token
       env.response.content_type = "application/json"
-      new_token
+      new_token.to_json
     end
 
     def self.introspect(env)
@@ -181,10 +182,10 @@ module SUsers
 
       token = Token.grant(client.id, user.id)
       panic(env, 500, "Something went wrong when generating the token.") unless token
-      code = Code.grant(client.id, user.id, redir)
+      code = Code.grant(client.id, user.id, token.id, redir)
       panic(env, 500, "Something went wrong when generating the code.") unless code
 
-      env.redirect(redir + "?code=#{code}")
+      env.redirect(redir + "?code=#{code.hash}")
     end
 
     def self.begin_code_auth(env)
