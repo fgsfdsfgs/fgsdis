@@ -8,6 +8,7 @@ module SUsers
     adapter sqlite
     table_name oauth_tokens
 
+    field scope : String
     field access : String
     field refresh : String
     field issued : Int64
@@ -30,6 +31,10 @@ module SUsers
       this.issued != nil && this.issued != 0
     end
 
+    validate :scope, "is required", ->(this : Token) do
+      this.scope != nil && this.scope != ""
+    end
+
     def access_rotten?
       if exp = @access_expires
         Time.now.epoch >= exp
@@ -49,6 +54,7 @@ module SUsers
     def to_json
       %({
         "user_id": "#{@user_id}",
+        "scope": "#{@scope}",
         "access_token": "#{@access}",
         "refresh_token": "#{@refresh}",
         "token_type": "bearer",
@@ -64,9 +70,10 @@ module SUsers
       save if valid?
     end
 
-    def self.grant(client_id, user_id)
+    def self.grant(client_id, user_id, scope)
       now = Time.now.epoch
       token = Token.new
+      token.scope = scope
       token.client_id = client_id
       token.user_id = user_id
       token.access = sha256(now.to_s + "A")

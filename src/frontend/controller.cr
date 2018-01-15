@@ -172,16 +172,22 @@ module SFrontend
     token = parse_json?(r.body)
     next render_error(env, r) unless token
 
-    access = token["access_token"].as_s
-    refresh = token["refresh_token"].as_s
-    exp = token["expires_in"].as_s.to_i64
+    access = token["access_token"]?
+    refresh = token["refresh_token"]?
+    scope = token["scope"]?
+
+    if !access || !refresh || !scope
+      next render_error(env, r)
+    end
 
     exptime = Time.now + 24.hours
 
     env.response.cookies <<
-      HTTP::Cookie.new("access_token", access, expires: exptime)
+      HTTP::Cookie.new("access_token", access.to_s, expires: exptime)
     env.response.cookies <<
-      HTTP::Cookie.new("refresh_token", refresh, expires: exptime)
+      HTTP::Cookie.new("refresh_token", refresh.to_s, expires: exptime)
+    env.response.cookies <<
+      HTTP::Cookie.new("access_level", scope.to_s, expires: exptime)
 
     uid = token["user_id"]?.to_s
 

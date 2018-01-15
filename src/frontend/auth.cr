@@ -11,6 +11,8 @@ def invalidate_auth_cookies(env)
   env.response.cookies <<
     HTTP::Cookie.new("refresh_token", "", expires: old)
   env.response.cookies <<
+    HTTP::Cookie.new("access_level", "", expires: old)
+  env.response.cookies <<
     HTTP::Cookie.new("user_id", "", expires: old)
   env.response.cookies <<
     HTTP::Cookie.new("user_name", "", expires: old)

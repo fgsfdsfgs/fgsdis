@@ -34,7 +34,7 @@ module SUsers
       panic(env, 400, err) unless user
 
       env.response.content_type = "application/json"
-      Token.grant(client.id, user.id).to_json
+      Token.grant(client.id, user.id, user.role).to_json
     end
 
     def self.token_get_by_code(env, client, redir)
@@ -78,7 +78,7 @@ module SUsers
         panic(env, 400, "Refresh token has expired.")
       end
 
-      new_token = Token.grant(client.id, token.user_id)
+      new_token = Token.grant(client.id, token.user_id, token.scope)
       token.destroy
       panic(env, 500, "Could not grant token.") unless new_token
       env.response.content_type = "application/json"
@@ -113,7 +113,8 @@ module SUsers
         %({
           "active": "true",
           "client_id": "#{token.client_id}",
-          "user_id": "#{token.user_id}"
+          "user_id": "#{token.user_id}",
+          "access": "#{token.scope}"
         })
       else
         %({
@@ -180,7 +181,7 @@ module SUsers
       err, user = check_creds(env, email, passwd)
       panic(env, 400, err) unless user
 
-      token = Token.grant(client.id, user.id)
+      token = Token.grant(client.id, user.id, user.role)
       panic(env, 500, "Something went wrong when generating the token.") unless token
       code = Code.grant(client.id, user.id, token.id, redir)
       panic(env, 500, "Something went wrong when generating the code.") unless code

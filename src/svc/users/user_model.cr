@@ -11,6 +11,7 @@ module SUsers
     field name : String
     field description : String
     field reg_date : String
+    field role : String
 
     # has_many :posts
     # has_many :comments
@@ -27,6 +28,10 @@ module SUsers
 
     validate :name, "is required", ->(this : User) do
       this.name != nil && this.name != ""
+    end
+
+    validate :role, "is required", ->(this : User) do
+      this.role != nil && this.role != ""
     end
 
     CREATE_FIELDS = {"email", "name", "description", "password"}

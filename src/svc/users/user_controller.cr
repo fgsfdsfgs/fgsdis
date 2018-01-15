@@ -21,6 +21,7 @@ module SUsers
       u = User.new(attrs)
       u.reg_date = Time.now.to_s("%FT%X")
       u.password = u.password ? sha256(u.password.to_s) : nil
+      u.role = "user"
 
       panic(env, 400, u.errors[0]) unless u.valid?
       panic(env, 500, u.errors[0]) unless u.save
