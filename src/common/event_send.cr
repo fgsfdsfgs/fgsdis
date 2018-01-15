@@ -184,7 +184,7 @@ module EventQueue
           statlog("Got malformed ack for event `#{local_id}`.")
         end
       else
-        statlog("ERROR: Got response for event `#{local_id}`, which is not in the wait list!")
+        statlog("Got response for event `#{local_id}`, which is not in the wait list.")
       end
     end
   end

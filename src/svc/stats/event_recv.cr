@@ -59,7 +59,6 @@ module SStats
         end
 
         uid = ev.cache_uid
-        statlog("Processing event:\n#{ev.to_pretty_json}")
 
         unless ev.valid?
           statlog("Event `#{uid}` has invalid contents, discarding: #{ev.errors[0]}.")
@@ -73,6 +72,8 @@ module SStats
           push_ack(send_chan, ev.service, ev.local_id, "duplicate")
           next
         end
+
+        statlog("Processing event:\n#{ev.to_pretty_json}")
 
         if ev.save
           statlog("Event `#{uid}` successfully processed and saved.")
