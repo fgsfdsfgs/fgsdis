@@ -12,18 +12,21 @@ module SGateway
       :users    => "",
       :posts    => "",
       :comments => "",
+      :stats    => "",
     }
 
     @@services = {
       :users    => CONFIG_SVC_USERS_ADDR,
       :posts    => CONFIG_SVC_POSTS_ADDR,
       :comments => CONFIG_SVC_COMMENTS_ADDR,
+      :stats    => CONFIG_SVC_STATS_ADDR,
     }
 
     @@creds = {
       :users    => CONFIG_SVC_USERS_SECRET,
       :posts    => CONFIG_SVC_POSTS_SECRET,
       :comments => CONFIG_SVC_COMMENTS_SECRET,
+      :stats    => "",
     }
 
     def self.json_result(code, msg)

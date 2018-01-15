@@ -19,5 +19,13 @@ module SStats
     post "/stats/:service/event" do |env|
       Controller.create(env)
     end
+
+    get "/stats/reports" do |env|
+      Controller.generate_all_reports(env)
+    end
+
+    get "/stats/report/:report" do |env|
+      Controller.generate_report(env)
+    end
   end
 end

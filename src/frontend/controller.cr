@@ -207,4 +207,14 @@ module SFrontend
     invalidate_auth_cookies(env)
     env.redirect("/")
   end
+
+  get "/stats" do |env|
+    r, nstats = api_get_json(env, "/stats/reports")
+    if r.status_code < 400
+      stats = nstats.not_nil!
+      render_view("statsview")
+    else
+      render_error(env, r)
+    end
+  end
 end

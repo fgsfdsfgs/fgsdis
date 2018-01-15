@@ -25,7 +25,7 @@
 
       <div class="card">
         <%- if error == "unauthorized" -%>
-          <h5 class="card-header">You are not authorized to perform this action.<br>Your session has timed out or you haven't logged in as this user before.<br>Please log in now.</h5>
+          <h5 class="card-header">You are not authorized to perform this action.<br>Your session has timed out or you don't have access to this feature.<br>Please log in properly.</h5>
         <%- elsif error == "timeout" -%>
           <h5 class="card-header">You were logged out due to inactivity.<br>Please log in again.</h5>
         <%- else -%>

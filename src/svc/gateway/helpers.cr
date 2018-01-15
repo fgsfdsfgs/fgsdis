@@ -105,11 +105,26 @@ macro validate_token_or_halt(env, hash, info)
   panic({{env}}, 403, "This token is invalid or inactive.") unless {{info}}["active"] == "true"
 end
 
-macro validate_login_or_halt(env, info)
+macro validate_login_or_halt(env, info, require_admin = false)
   %user = {{env}}.params.json.fetch("user", "")
   %uid1 = %user.to_s.to_i64?
-  %uid2 = {{info}}["user_id"].to_s.to_i64?
-  unless %uid1 && %uid2 && (%uid1 == %uid2)
+  %uid2 = {{info}}["user_id"]?.to_s.to_i64?
+  %role = {{info}}["access"]?.to_s
+
+  if {{require_admin}} && %role != "admin"
+    panic({{env}}, 403, "You do not have access to this page.")
+  end
+
+  panic({{env}}, 401, "You are not logged in as this user.") unless %uid2
+  unless %uid1 == %uid2 || {{require_admin}}
     panic({{env}}, 401, "You are not logged in as this user.")
+  end
+end
+
+macro validate_role_or_halt(env, info, required_role = "user")
+  %role = {{info}}["access"]?.to_s
+
+  if %role != {{required_role}}
+    panic({{env}}, 403, "You do not have access to this page.")
   end
 end

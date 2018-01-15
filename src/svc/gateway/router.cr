@@ -92,5 +92,15 @@ module SGateway
     post "/oauth/token" do |env|
       OAuthController.request_token(env)
     end
+
+    # /stats
+
+    get "/stats/reports" do |env|
+      ApiController.get_all_stats_reports(env)
+    end
+
+    get "/stats/report/:report" do |env|
+      ApiController.get_stats_report(env)
+    end
   end
 end

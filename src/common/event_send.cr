@@ -55,7 +55,7 @@ module EventQueue
     end
   end
 
-  @@service = "FIXME"
+  @@service = ""
   @@resend = ConcurrentHash(String, Event).new
   @@chan_events = Channel(Event).new(CHAN_SIZE)
 
@@ -217,5 +217,7 @@ module EventQueue
     end
   end
 
-  Kemal.config.logger = EventLogger.new
+  unless ENV["KEMAL_ENV"]? == "test"
+    Kemal.config.logger = EventLogger.new
+  end
 end

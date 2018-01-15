@@ -183,5 +183,23 @@ module SGateway
 
       pass_request(env, :comments)
     end
+
+    # /stats
+
+    def self.get_stats_report(env)
+      token, info = OAuth.get_auth_info(env)
+      validate_token_or_halt(env, token, info)
+      validate_role_or_halt(env, info, "admin")
+
+      pass_request(env, :stats)
+    end
+
+    def self.get_all_stats_reports(env)
+      token, info = OAuth.get_auth_info(env)
+      validate_token_or_halt(env, token, info)
+      validate_role_or_halt(env, info, "admin")
+
+      pass_request(env, :stats)
+    end
   end
 end
