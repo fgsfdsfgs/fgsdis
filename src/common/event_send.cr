@@ -185,11 +185,37 @@ module EventQueue
     end
   end
 
-  after_all do |env|
-    push_event(
-      env.request.method,
-      env.request.resource,
-      env.response.status_code
-    )
+  # HACK: have to manually replace the logger to capture all possible events
+  class EventLogger < Kemal::BaseLogHandler
+    @io : IO
+
+    def initialize(@io : IO = STDOUT)
+    end
+
+    def call(context : HTTP::Server::Context)
+      time = Time.now
+      call_next(context)
+      elapsed_text = elapsed_text(Time.now - time)
+      @io << time << " " << context.response.status_code << " " << context.request.method << " " << context.request.resource << " " << elapsed_text << "\n"
+      EventQueue.push_event(
+        context.request.method,
+        context.request.resource,
+        context.response.status_code
+      )
+      context
+    end
+
+    def write(message : String)
+      @io << message
+    end
+
+    private def elapsed_text(elapsed)
+      millis = elapsed.total_milliseconds
+      return "#{millis.round(2)}ms" if millis >= 1
+
+      "#{(millis * 1000).round(2)}µs"
+    end
   end
+
+  Kemal.config.logger = EventLogger.new
 end
