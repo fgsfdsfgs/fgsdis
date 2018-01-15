@@ -13,6 +13,8 @@ targets:
     main: src/svc_posts.cr
   svc_comments:
     main: src/svc_comments.cr
+  svc_stats:
+    main: src/svc_stats.cr
   frontend:
     main: src/frontend.cr
 
@@ -26,9 +28,13 @@ dependencies:
 
   granite_orm:
     github: amberframework/granite-orm
+    version: 0.8.1
 
   kemal:
     github: kemalcr/kemal
 
   spec-kemal:
     github: kemalcr/spec-kemal
+
+  amqp:
+    github: yuki-bot/amqp.cr

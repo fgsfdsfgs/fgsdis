@@ -55,9 +55,10 @@ module ServiceAuth
 
   @@creds = {} of String => String
   @@tokens = {} of String => BasicToken
+  @@disabled = false
 
   def self.skip?(env)
-    Kemal.config.env == "test"
+    Kemal.config.env == "test" || @@disabled
   end
 
   def self.valid_creds?(appid, secret)
@@ -70,6 +71,10 @@ module ServiceAuth
 
   def self.add_creds(appid, secret)
     @@creds[appid] = sha256(secret)
+  end
+
+  def self.disable
+    @@disabled = true
   end
 
   def self.token_valid?(hash)
