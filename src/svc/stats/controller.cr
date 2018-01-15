@@ -76,8 +76,16 @@ module SStats
         x, y = Reports.auth_successes(from, to)
       when "auth_fail"
         x, y = Reports.auth_failures(from, to)
-      when "views"
-        x, y = Reports.page_visits(from, to)
+      when "activity"
+        x, y = Reports.activity(from, to)
+      when "posts"
+        x, y = Reports.posts_info(from, to)
+      when "comments"
+        x, y = Reports.comments_info(from, to)
+      when "users"
+        x, y = Reports.users_info(from, to)
+      when "general"
+        x, y = Reports.general_info(from, to)
       else
         x, y = {nil, nil}
       end
@@ -107,7 +115,6 @@ module SStats
     end
 
     def self.generate_all_reports(env)
-      report = env.params.url.fetch("report", "")
       from_arg = env.params.query.fetch("from", "").to_i64?
       to_arg = env.params.query.fetch("to", "").to_i64?
 
@@ -115,7 +122,10 @@ module SStats
       to = to_arg ? Time.epoch(to_arg) : Time.utc_now
 
       res = "{\n"
-      ["pph", "cph", "auth_ok", "auth_fail", "views"].each do |report|
+      [
+        "pph", "cph", "auth_ok", "auth_fail", "activity",
+        "posts", "comments", "users", "general",
+      ].each do |report|
         x, y = get_report_by_name(report, from, to)
         res += %(
           "#{report}": {
@@ -124,7 +134,7 @@ module SStats
             "x": #{x.to_json},
             "y": #{y.to_json}
           })
-        res += ",\n" unless report == "views"
+        res += ",\n" unless report == "general"
       end
       res += "\n}"
 

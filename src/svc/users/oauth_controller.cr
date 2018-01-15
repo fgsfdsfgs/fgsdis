@@ -144,6 +144,7 @@ module SUsers
       panic(env, 403, "Redirect URI does not match.") unless redir == cl_redir
 
       grant_type = env.params.body.fetch("grant_type", "")
+      env.set("event_extra", grant_type)
       case grant_type
       when "password"
         token_get_by_creds(env, client)

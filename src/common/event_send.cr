@@ -59,6 +59,10 @@ module EventQueue
   @@resend = ConcurrentHash(String, Event).new
   @@chan_events = Channel(Event).new(CHAN_SIZE)
 
+  def self.service
+    @@service
+  end
+
   def self.start_event_source(service, host, port, user, pass)
     @@service = service
 
@@ -197,11 +201,13 @@ module EventQueue
       call_next(context)
       elapsed_text = elapsed_text(Time.now - time)
       @io << time << " " << context.response.status_code << " " << context.request.method << " " << context.request.resource << " " << elapsed_text << "\n"
-      EventQueue.push_event(
-        context.request.method,
-        context.request.resource,
-        context.response.status_code
-      )
+
+      method = context.request.method
+      resource = context.request.resource
+      response = context.response.status_code
+      extra = context.store.fetch("event_extra", "")
+
+      EventQueue.push_event(method, resource, response, extra.to_s)
       context
     end
 

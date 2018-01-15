@@ -1,5 +1,5 @@
 <% content_for "page_title" do %>
-  Comment details
+  Stats
 <% end %>
 
 <% content_for "style" do %>
@@ -13,19 +13,170 @@
         padding-top: 56px;
       }
     }
+
+    .portfolio-item {
+      margin-bottom: 30px;
+    }
+
+    .chart {
+      margin: 32px;
+    }
   </style>
+
+  <script src="/js/plotly-latest.min.js"></script>
+
+  <script>
+    function make_plot(id, name, yname, data) {
+      data.type = 'scatter';
+      layout = {
+        xaxis: {title: 'Hour', autotick: false, range: [0, 23]},
+        yaxis: {title: yname},
+        height: 400,
+        margin: {l: 80, r: 40, b: 40, t: 0, pad: 4}
+      };
+      return Plotly.newPlot(id, data, layout);
+    }
+
+    function make_plotdata(xs, ys, dname) {
+      dname = typeof dname !== 'undefined' ? dname : null;
+      return {
+        x: xs,
+        y: ys,
+        name: dname
+      };
+    }
+
+    window.onload = function () {
+      var x = <%= pph["x"].to_json %>;
+      var y = <%= pph["y"].to_json %>;
+      var data = [make_plotdata(x, y)];
+      make_plot('pph', "Posts per hour", "Posts", data);
+
+      x = <%= cph["x"].to_json %>;
+      y = <%= cph["y"].to_json %>;
+      data = [make_plotdata(x, y)];
+      make_plot('cph', "Comments per hour", "Comments", data);
+
+      x = <%= act["x"].to_json %>;
+      y = <%= act["y"].to_json %>;
+      data = [make_plotdata(x, y)];
+      make_plot('act', "Requests per hour", "Requests", data);
+
+      x1 = <%= aerr["x"].to_json %>;
+      y1 = <%= aerr["y"].to_json %>;
+      x2 = <%= aok["x"].to_json %>;
+      y2 = <%= aok["y"].to_json %>;
+      data = [make_plotdata(x1, y1, "Failed"), make_plotdata(x2, y2, "Successful")];
+      make_plot('auth', "Authorization successes and failures", "Authorizations", data);
+    }
+  </script>
 <% end %>
 
-<% if env.request.cookies["access_level"]?.to_s == "admin" %>
-  <div class="container">
-    <div class="row justify-content-center">
-      <div class="col-lg-8">
-        <br>
-        <center><h2 class="display-4">You do not have access to this page.</h2></center>
+<div class="container-fluid" style="width: 75%;">
+  <!-- Page Heading -->
+  <h1 class="my-4">Statistics
+    <small>For today, <%= Time.utc_now.to_s("%B %-d, %Y at %R UTC") %></small>
+  </h1>
+
+  <nav class="nav nav-tabs" id="stabs" role="tablist">
+    <a class="nav-item nav-link active" id="nav-graphs-tab" data-toggle="tab" href="#tgraphs" role="tab" aria-controls="tgraphs" aria-selected="true">Charts</a>
+    <a class="nav-item nav-link" id="nav-nums-tab" data-toggle="tab" href="#tnums" role="tab" aria-controls="tnums" aria-selected="false">Numbers</a>
+  </nav>
+
+  <div class="tab-content" id="stabsContent">
+    <div id="tgraphs" class="tab-pane show active" role="tabpanel" aria-labelledby="tgraphs-tab">
+      <div class="row" style="padding-top: 16px;">
+        <div class="col-lg-6 portfolio-item">
+          <div class="card h-100">
+            <div class="card-img-top"><div id="pph" class="chart"></div></div>
+            <div class="card-body">
+              <h4 class="card-title">
+                <b>Posts per hour</b>
+              </h4>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-6 portfolio-item">
+          <div class="card h-100">
+            <div class="card-img-top"><div id="cph" class="chart"></div></div>
+            <div class="card-body">
+              <h4 class="card-title">
+                <b>Comments per hour</b>
+              </h4>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-6 portfolio-item">
+          <div class="card h-100">
+            <div class="card-img-top"><div id="act" class="chart"></div></div>
+            <div class="card-body">
+              <h4 class="card-title">
+                <b>Activity</b>
+              </h4>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-6 portfolio-item">
+          <div class="card h-100">
+            <div class="card-img-top"><div id="auth" class="chart"></div></div>
+            <div class="card-body">
+              <h4 class="card-title">
+                <b>Login failures vs. successes</b>
+              </h4>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="tnums" class="tab-pane" role="tabpanel" aria-labelledby="tnums-tab">
+      <div class="row" style="padding-top: 16px;">
+        <div class="col-lg-6 portfolio-item">
+          <div class="card h-100">
+            <h5 class="card-header">Posts Service</h5>
+            <div class="card-body">
+              <b>Posts created:</b> <%= iposts["y"][0].to_s %>
+              <br/>
+              <b>Average posts per hour:</b> <%= truncfloat(iposts["y"][1].as_f?) %>
+              <br/>
+              <b>Posts deleted:</b> <%= iposts["y"][2].to_s %>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-6 portfolio-item">
+          <div class="card h-100">
+            <h5 class="card-header">Comments Service</h5>
+            <div class="card-body">
+              <b>Comments created:</b> <%= icomments["y"][0].to_s %>
+              <br/>
+              <b>Average comments per hour:</b> <%= truncfloat(icomments["y"][1].as_f?) %>
+              <br/>
+              <b>Comments deleted:</b> <%= icomments["y"][2].to_s %>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-6 portfolio-item">
+          <div class="card h-100">
+            <h5 class="card-header">Users Service</h5>
+            <div class="card-body">
+              <b>Logins by password:</b> <%= iusers["y"][1].to_s %>
+              <br/>
+              <b>Logins by code:</b> <%= iusers["y"][0].to_s %>
+              <br/>
+              <b>Logins by refresh token:</b> <%= iusers["y"][2].to_s %>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-6 portfolio-item">
+          <div class="card h-100">
+            <h5 class="card-header">Gateway</h5>
+            <div class="card-body">
+              <b>Total requests:</b> <%= igeneral["y"][0].to_s %>
+              <br/>
+              <b>Average requests per hour:</b> <%= truncfloat(igeneral["y"][1].as_f?) %>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
-<% else %>
-  <center><h2 class="display-4">Stats</h2></center>
-  <tt><%= stats.to_pretty_json %></tt>
-<% end %>
+</div>

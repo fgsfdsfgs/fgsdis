@@ -209,9 +209,37 @@ module SFrontend
   end
 
   get "/stats" do |env|
-    r, nstats = api_get_json(env, "/stats/reports")
-    if r.status_code < 400
+    access = false
+    if c = env.request.cookies["access_level"]?
+      access = c.value == "admin"
+    end
+
+    unless access
+      errcode = 403
+      errtext = "You don't have access to this page."
+      next render_view("error")
+    end
+
+    # for today
+    from = Time.utc_now.at_beginning_of_day.epoch
+    to = Time.utc_now.at_end_of_day.epoch
+
+    r, nstats = api_get_json(env, "/stats/reports?from=#{from}&to=#{to}")
+    if r.status_code < 400 && nstats
       stats = nstats.not_nil!
+      puts stats.pretty_inspect
+
+      pph = stats["pph"]
+      cph = stats["cph"]
+      act = stats["activity"]
+      aerr = stats["auth_fail"]
+      aok = stats["auth_ok"]
+
+      iposts = stats["posts"]
+      icomments = stats["comments"]
+      iusers = stats["users"]
+      igeneral = stats["general"]
+
       render_view("statsview")
     else
       render_error(env, r)

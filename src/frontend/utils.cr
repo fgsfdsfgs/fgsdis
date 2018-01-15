@@ -48,7 +48,7 @@ end
 def parse_json?(body)
   begin
     json = JSON.parse(body)
-  rescue
+  rescue ex
     json = nil
   end
   json
@@ -82,6 +82,14 @@ def word_limit(s, width = 200)
     return r[0] + "..."
   end
   s
+end
+
+def truncfloat(f : Float64?, points = 3)
+  if f
+    sprintf("%.#{points}f", f)
+  else
+    "nil"
+  end
 end
 
 def timefmt_long(s)
