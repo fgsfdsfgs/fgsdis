@@ -220,9 +220,16 @@ module SFrontend
       next render_view("error")
     end
 
+    day_v = env.params.query.fetch("date", "")
+    begin
+      day = Time.parse(day_v, "%F")
+    rescue
+      day = Time.now
+    end
+
     # for today
-    from = Time.utc_now.at_beginning_of_day.epoch
-    to = Time.utc_now.at_end_of_day.epoch
+    from = day.at_beginning_of_day.epoch
+    to = day.at_end_of_day.epoch
 
     r, nstats = api_get_json(env, "/stats/reports?from=#{from}&to=#{to}")
     if r.status_code < 400 && nstats

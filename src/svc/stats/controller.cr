@@ -99,7 +99,7 @@ module SStats
       to_arg = env.params.query.fetch("to", "").to_i64?
 
       from = from_arg ? Time.epoch(from_arg) : Time.epoch(0)
-      to = to_arg ? Time.epoch(to_arg) : Time.utc_now
+      to = to_arg ? Time.epoch(to_arg) : Time.now
 
       x, y = get_report_by_name(report, from, to)
       panic(env, 400, "Unknown report ID.") unless x && y
@@ -119,7 +119,7 @@ module SStats
       to_arg = env.params.query.fetch("to", "").to_i64?
 
       from = from_arg ? Time.epoch(from_arg) : Time.epoch(0)
-      to = to_arg ? Time.epoch(to_arg) : Time.utc_now
+      to = to_arg ? Time.epoch(to_arg) : Time.now
 
       res = "{\n"
       [

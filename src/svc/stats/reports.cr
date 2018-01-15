@@ -17,7 +17,7 @@ module SStats
       y = Array(Int32).new(24, 0)
 
       events.each do |ev|
-        date = Time.epoch(ev.date.not_nil!)
+        date = Time.epoch(ev.date.not_nil!).to_local
         y[date.hour] += 1
       end
 
@@ -38,7 +38,7 @@ module SStats
       y = Array(Int32).new(24, 0)
 
       events.each do |ev|
-        date = Time.epoch(ev.date.not_nil!)
+        date = Time.epoch(ev.date.not_nil!).to_local
         y[date.hour] += 1
       end
 
@@ -55,7 +55,7 @@ module SStats
       y = Array(Int32).new(24, 0)
 
       events.each do |ev|
-        date = Time.epoch(ev.date.not_nil!)
+        date = Time.epoch(ev.date.not_nil!).to_local
         y[date.hour] += 1
       end
 
@@ -76,7 +76,7 @@ module SStats
       y = Array(Int32).new(24, 0)
 
       events.each do |ev|
-        date = Time.epoch(ev.date.not_nil!)
+        date = Time.epoch(ev.date.not_nil!).to_local
         y[date.hour] += 1
       end
 
@@ -97,7 +97,7 @@ module SStats
       y = Array(Int32).new(24, 0)
 
       events.each do |ev|
-        date = Time.epoch(ev.date.not_nil!)
+        date = Time.epoch(ev.date.not_nil!).to_local
         y[date.hour] += 1
       end
 
@@ -119,7 +119,7 @@ module SStats
         h = Array(Int32).new(24, 0)
 
         events.each do |ev|
-          date = Time.epoch(ev.date.not_nil!)
+          date = Time.epoch(ev.date.not_nil!).to_local
           h[date.hour] += 1
         end
 
@@ -153,7 +153,7 @@ module SStats
         h = Array(Int32).new(24, 0)
 
         events.each do |ev|
-          date = Time.epoch(ev.date.not_nil!)
+          date = Time.epoch(ev.date.not_nil!).to_local
           h[date.hour] += 1
         end
 

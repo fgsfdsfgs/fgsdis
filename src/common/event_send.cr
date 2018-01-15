@@ -35,7 +35,7 @@ module EventQueue
 
     def initialize(@service : String, @kind : String)
       @life = NUM_RETRIES
-      @date = Time.utc_now
+      @date = Time.now
       @local_id = generate_local_id
       @resource = ""
       @response = 0

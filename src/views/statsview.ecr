@@ -23,7 +23,9 @@
     }
   </style>
 
+  <link rel="stylesheet" href="/css/bootstrap-datepicker3.standalone.min.css"/>
   <script src="/js/plotly-latest.min.js"></script>
+  <script src="/js/bootstrap-datepicker.min.js"></script>
 
   <script>
     function make_plot(id, name, yname, data) {
@@ -47,6 +49,11 @@
     }
 
     window.onload = function () {
+      $('#date').datepicker({
+        format: 'yyyy-mm-dd',
+        defaultViewDate: '<%= day.to_s("%F") %>'
+      });
+
       var x = <%= pph["x"].to_json %>;
       var y = <%= pph["y"].to_json %>;
       var data = [make_plotdata(x, y)];
@@ -74,9 +81,12 @@
 
 <div class="container-fluid" style="width: 90%;">
   <!-- Page Heading -->
-  <h1 class="my-4">Statistics
-    <small>For today, <%= Time.utc_now.to_s("%B %-d, %Y at %R UTC") %></small>
-  </h1>
+  <h1 class="my-4">Statistics</h1>
+  <form method="get">
+    <label for="date"><b>Date:</b>  </label>
+    <input id="date" name="date" data-provide="datepicker" value='<%= day.to_s("%F") %>'>
+    <button type="submit" class="btn btn-primary">Change</button>
+  </form><br>
 
   <nav class="nav nav-tabs" id="stabs" role="tablist">
     <a class="nav-item nav-link active" id="nav-graphs-tab" data-toggle="tab" href="#tgraphs" role="tab" aria-controls="tgraphs" aria-selected="true">Charts</a>
